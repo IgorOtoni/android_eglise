@@ -28,8 +28,6 @@ public class Configuracao {
     @DatabaseField
     private String updated_at;
 
-    private Congregacao congregacao;
-
     public int getId() {
         return id;
     }

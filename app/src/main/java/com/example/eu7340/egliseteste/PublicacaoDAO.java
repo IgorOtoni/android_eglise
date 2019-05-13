@@ -5,10 +5,10 @@ import com.j256.ormlite.support.ConnectionSource;
 
 import java.sql.SQLException;
 
-public class SubMenuDAO extends BaseDaoImpl<SubMenu, Integer> {
+public class PublicacaoDAO extends BaseDaoImpl<Publicacao, Integer> {
 
-    public SubMenuDAO(ConnectionSource connectionSource) throws SQLException {
-        super(SubMenu.class);
+    public PublicacaoDAO(ConnectionSource connectionSource) throws SQLException {
+        super(Publicacao.class);
         setConnectionSource(connectionSource);
         initialize();
     }

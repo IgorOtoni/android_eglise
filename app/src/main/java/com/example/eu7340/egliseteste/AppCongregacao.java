@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -37,6 +39,7 @@ public class AppCongregacao extends AppCompatActivity
     private Congregacao congregacao;
     private View headerView;
     private android.view.Menu menu;
+    private List<Menu> menus;
     private android.view.Menu sub_menu;
 
     @Override
@@ -74,16 +77,17 @@ public class AppCongregacao extends AppCompatActivity
         CarregaLinksCongregacao carregaLinksCongregacao_task = new CarregaLinksCongregacao();
         carregaLinksCongregacao_task.execute(congregacao);
 
+        CarregaMenusCongregacao carregaMenusCongregacao_task = new CarregaMenusCongregacao();
+        carregaMenusCongregacao_task.execute(congregacao);
+
         //ImageView imageView = findViewById(R.id.congregacao_logo);
         //http://eglise.com.br/storage/igrejas/logo-igreja-1.jpg
     }
 
-    private class CarregaMenusCongregacao extends AsyncTask<Congregacao, Void, ArrayList<Object>> {
+    private class CarregaMenusCongregacao extends AsyncTask<Congregacao, Void, List<Menu>> {
         @Override
-        protected ArrayList<Object> doInBackground(Congregacao... params) {
+        protected List<Menu> doInBackground(Congregacao... params) {
             try {
-                ArrayList<Object> resultado = new ArrayList<>();
-
                 ConfiguracaoDAO configuracaoDAO = new ConfiguracaoDAO(DB.connection);
                 QueryBuilder<Configuracao, Integer> _filtro = configuracaoDAO.queryBuilder();
                 _filtro.where().like("id_igreja", params[0].getId());
@@ -93,27 +97,11 @@ public class AppCongregacao extends AppCompatActivity
                 MenuDAO menuDAO = new MenuDAO(DB.connection);
                 QueryBuilder<Menu, Integer> __filtro = menuDAO.queryBuilder();
                 __filtro.where().like("id_configuracao", _resultado.get(0).getId());
+                __filtro.orderBy("ordem", true);
                 PreparedQuery<Menu> _preparedQuery = __filtro.prepare();
                 List<Menu> __resultado = menuDAO.query(_preparedQuery);
 
-                resultado.add(__resultado);
-
-                ArrayList<List> sub_menus_por_menu = new ArrayList<>();
-                for(int x = 0; x < __resultado.size(); x++){
-                    SubMenuDAO subMenuDAO = new SubMenuDAO(DB.connection);
-                    QueryBuilder<SubMenu, Integer> ___filtro = subMenuDAO.queryBuilder();
-                    ___filtro.where().like("id_menu", __resultado.get(0).getId());
-                    PreparedQuery<SubMenu> __preparedQuery = ___filtro.prepare();
-                    List<SubMenu> ___resultado = subMenuDAO.query(__preparedQuery);
-
-                    sub_menus_por_menu.add(___resultado);
-                }
-
-                resultado.add(sub_menus_por_menu);
-
-
-
-                return resultado;
+                return __resultado;
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -122,11 +110,12 @@ public class AppCongregacao extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Object> todos_menus) {
-            List<Menu> menus = (List<Menu>) todos_menus.get(0);
+        protected void onPostExecute(List<Menu> todos_menus) {
+            //menu.clear();
+            menus = todos_menus;
 
             for(int qtd_menus = 0; qtd_menus < todos_menus.size(); qtd_menus++){
-
+                menu.add(0, menus.get(qtd_menus).getId(), menus.get(qtd_menus).getOrdem(), menus.get(qtd_menus).getNome());
             }
         }
     }
@@ -227,7 +216,7 @@ public class AppCongregacao extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.app_congregacao, menu);
 
@@ -256,15 +245,43 @@ public class AppCongregacao extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        for(int cont = 0; cont < menus.size(); cont++){
+            if(id == menus.get(cont).getId()){
+                MenuItem menu_item = menu.findItem(menus.get(cont).getId());
+                if(menus.get(cont).getLink().contains("modulo")) {
+                    String[] split = menus.get(cont).getLink().split("-");
+                    switch(split[1]){
+                        case "eventos":
+                            openFragment(EventosFragment.newInstance());
+                            break;
+                        case "eventosfixos":
+                            openFragment(EventosFixosFragment.newInstance());
+                            break;
+                        case "publicacoes":
+                            openFragment(PublicacoesFragment.newInstance());
+                            break;
+                        case "noticias":
+                            openFragment(NoticiasFragment.newInstance());
+                            break;
+                        case "sermoes":
+                            openFragment(SermoesFragment.newInstance());
+                            break;
+                    }
+                }else if(menus.get(cont).getLink().contains("evento")) {
 
-        } else if (id == R.id.nav_slideshow) {
+                }else if(menus.get(cont).getLink().contains("noticia")) {
 
-        } else if (id == R.id.nav_tools) {
+                }else if(menus.get(cont).getLink().contains("eventofixo")) {
 
-        } else if (id == R.id.facebook_link) {
+                }else if(menus.get(cont).getLink().contains("publicacao")) {
+
+                }else if(menus.get(cont).getLink().contains("sermao")) {
+
+                }
+            }
+        }
+
+        if (id == R.id.facebook_link) {
             startActivity(item.getIntent());
         } else if (id == R.id.twitter_link) {
             startActivity(item.getIntent());
@@ -275,5 +292,12 @@ public class AppCongregacao extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void openFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container_app_congregacao, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

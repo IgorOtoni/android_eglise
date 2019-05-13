@@ -3,18 +3,18 @@ package com.example.eu7340.egliseteste;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "tbl_sub_menus")
-public class SubMenu {
+@DatabaseTable(tableName = "tbl_publicacoes")
+public class Publicacao {
     @DatabaseField(generatedId = true)
     private int id;
     @DatabaseField
-    private int id_menu;
+    private int id_igreja;
     @DatabaseField
-    private int ordem;
+    private boolean galeria;
     @DatabaseField
     private String nome;
     @DatabaseField
-    private String link;
+    private String html;
     @DatabaseField
     private String created_at;
     @DatabaseField
@@ -28,20 +28,20 @@ public class SubMenu {
         this.id = id;
     }
 
-    public int getId_configuracao() {
-        return id_menu;
+    public int getId_igreja() {
+        return id_igreja;
     }
 
-    public void setId_configuracao(int id_menu) {
-        this.id_menu = id_menu;
+    public void setId_igreja(int id_igreja) {
+        this.id_igreja = id_igreja;
     }
 
-    public int getOrdem() {
-        return ordem;
+    public boolean isGaleria() {
+        return galeria;
     }
 
-    public void setOrdem(int ordem) {
-        this.ordem = ordem;
+    public void setGaleria(boolean galeria) {
+        this.galeria = galeria;
     }
 
     public String getNome() {
@@ -52,12 +52,12 @@ public class SubMenu {
         this.nome = nome;
     }
 
-    public String getLink() {
-        return link;
+    public String getHtml() {
+        return html;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setHtml(String html) {
+        this.html = html;
     }
 
     public String getCreated_at() {
@@ -76,4 +76,3 @@ public class SubMenu {
         this.updated_at = updated_at;
     }
 }
-

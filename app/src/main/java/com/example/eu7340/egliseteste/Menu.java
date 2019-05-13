@@ -3,7 +3,7 @@ package com.example.eu7340.egliseteste;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "tbl_menus")
+@DatabaseTable(tableName = "tbl_menus_android")
 public class Menu {
     @DatabaseField(generatedId = true)
     private int id;

@@ -20,6 +20,20 @@ import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.eu7340.egliseteste.DB.ConfiguracaoDAO;
+import com.example.eu7340.egliseteste.DB.DB;
+import com.example.eu7340.egliseteste.DB.MenuDAO;
+import com.example.eu7340.egliseteste.Fragments.EventosFixosFragment;
+import com.example.eu7340.egliseteste.Fragments.EventosFragment;
+import com.example.eu7340.egliseteste.Fragments.GaleriasFragment;
+import com.example.eu7340.egliseteste.Fragments.HomeFragment;
+import com.example.eu7340.egliseteste.Fragments.NoticiasFragment;
+import com.example.eu7340.egliseteste.Fragments.PublicacoesFragment;
+import com.example.eu7340.egliseteste.Fragments.SermoesFragment;
+import com.example.eu7340.egliseteste.Models.Configuracao;
+import com.example.eu7340.egliseteste.Models.Congregacao;
+import com.example.eu7340.egliseteste.Models.Menu;
+import com.example.eu7340.egliseteste.utils.Sessao;
 import com.google.gson.Gson;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -30,17 +44,18 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AppCongregacao extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Congregacao congregacao;
+    private Configuracao configuracao;
     private View headerView;
     private android.view.Menu menu;
     private List<Menu> menus;
     private android.view.Menu sub_menu;
+    private ImageView logo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +72,33 @@ public class AppCongregacao extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getIntent().getStringExtra("json"), Congregacao.class);
+        this.congregacao = gson.fromJson(getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = gson.fromJson(getIntent().getStringExtra("configuracao_app"), Configuracao.class);
+
+        if(congregacao == null || configuracao == null){
+            congregacao = Sessao.ultima_congregacao;
+            configuracao = Sessao.ultima_configuracao;
+
+            String congregacao_json = gson.toJson(congregacao);
+            String configuracao_json = gson.toJson(configuracao);
+
+            Intent intent = new Intent(this, AppCongregacao.class);
+
+            intent.putExtra("congregacao_app", congregacao_json);
+            intent.putExtra("configuracao_app", configuracao_json);
+
+            this.setIntent(intent);
+        }else{
+            Sessao.ultima_congregacao = congregacao;
+            Sessao.ultima_configuracao = configuracao;
+        }
+
+        getSupportActionBar().setTitle(this.congregacao.getNome());
 
         headerView = navigationView.getHeaderView(0);
         menu = navigationView.getMenu();
         sub_menu = ((MenuItem)menu.findItem(R.id.social_menu)).getSubMenu();
+        logo = headerView.findViewById(R.id.congregacao_logo);
 
         getSupportActionBar().setTitle(congregacao.getNome());
 
@@ -80,8 +117,7 @@ public class AppCongregacao extends AppCompatActivity
         CarregaMenusCongregacao carregaMenusCongregacao_task = new CarregaMenusCongregacao();
         carregaMenusCongregacao_task.execute(congregacao);
 
-        //ImageView imageView = findViewById(R.id.congregacao_logo);
-        //http://eglise.com.br/storage/igrejas/logo-igreja-1.jpg
+        openFragment(HomeFragment.newInstance());
     }
 
     private class CarregaMenusCongregacao extends AsyncTask<Congregacao, Void, List<Menu>> {
@@ -182,7 +218,7 @@ public class AppCongregacao extends AppCompatActivity
         @Override
         protected Bitmap doInBackground(Congregacao... params) {
             try {
-                URL url = new URL("http://eglise.com.br/storage/igrejas/" + params[0].getLogo());
+                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getLogo() != null ? "igrejas/" + params[0].getLogo() : "no-logo.jpg"));
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
                 connection.connect();
@@ -200,8 +236,7 @@ public class AppCongregacao extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Bitmap result) {
-            ImageView imageView = findViewById(R.id.congregacao_logo);
-            imageView.setImageBitmap(result);
+            logo.setImageBitmap(result);
         }
     }
 
@@ -265,6 +300,8 @@ public class AppCongregacao extends AppCompatActivity
                             break;
                         case "sermoes":
                             openFragment(SermoesFragment.newInstance());
+                        case "galerias":
+                            openFragment(GaleriasFragment.newInstance());
                             break;
                     }
                 }else if(menus.get(cont).getLink().contains("evento")) {
@@ -297,7 +334,7 @@ public class AppCongregacao extends AppCompatActivity
     private void openFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container_app_congregacao, fragment);
-        transaction.addToBackStack(null);
+        //transaction.addToBackStack(null);
         transaction.commit();
     }
 }

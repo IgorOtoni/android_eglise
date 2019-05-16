@@ -8,11 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.NonNull;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import com.example.eu7340.egliseteste.DB.DatabaseHelper;
+import com.example.eu7340.egliseteste.Fragments.CongregacoesFragment;
+import com.example.eu7340.egliseteste.Fragments.EgliseFragment;
 
 public class MainActivity extends AppCompatActivity {
     private TextView mTextMessage;
@@ -24,12 +23,12 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.mn_eglise:
-                    getSupportActionBar().setTitle("Plataforma Église");
+                    //getSupportActionBar().setTitle("Plataforma Église");
                     Fragment egliseFragment = EgliseFragment.newInstance();
                     openFragment(egliseFragment);
                     return true;
                 case R.id.mn_congregacoes:
-                    getSupportActionBar().setTitle("Congregações");
+                    //getSupportActionBar().setTitle("Congregações");
                     Fragment congregacoesFragment = CongregacoesFragment.newInstance();
                     openFragment(congregacoesFragment);
                     return true;
@@ -41,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private void openFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
-        transaction.addToBackStack(null);
+        //transaction.addToBackStack(null);
         transaction.commit();
     }
 

@@ -3,10 +3,14 @@ package com.example.eu7340.egliseteste;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.LinearLayout;
+import android.webkit.WebViewClient;
 
+import com.example.eu7340.egliseteste.DB.ConfiguracaoDAO;
+import com.example.eu7340.egliseteste.DB.DB;
+import com.example.eu7340.egliseteste.Models.Configuracao;
+import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.google.gson.Gson;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -24,7 +28,7 @@ public class SiteCongregacao extends AppCompatActivity {
         setContentView(R.layout.activity_site_congregacao);
 
         Gson gson = new Gson();
-        Congregacao congregacao = gson.fromJson(getIntent().getStringExtra("json"), Congregacao.class);
+        Congregacao congregacao = gson.fromJson(getIntent().getStringExtra("congregacao_site"), Congregacao.class);
 
         webView = (WebView) findViewById(R.id.site_congregacao);
 
@@ -59,6 +63,14 @@ public class SiteCongregacao extends AppCompatActivity {
         }
 
         protected void onPostExecute(String url) {
+            webView.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    return false;
+                }
+            });
+            WebSettings webSettings = webView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             webView.loadUrl("http://www.eglise.com.br/" + url);
         }
 

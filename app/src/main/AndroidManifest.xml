@@ -7,16 +7,53 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
+        android:hardwareAccelerated="true"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_foreground"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".GaleriaActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
+        <activity android:name=".PublicacaoActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
+        <activity android:name=".SermaoActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
+        <activity android:name=".EventoActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
+        <activity android:name=".NoticiaActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
+        <activity android:name=".EventoFixoActivity"
+            android:parentActivityName=".AppCongregacao">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eu7340.egliseteste.AppCongregacao" />
+        </activity>
         <activity
             android:name=".AppCongregacao"
             android:label="@string/title_activity_app_congregacao"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SiteCongregacao"
             android:parentActivityName=".MainActivity">
@@ -30,6 +67,7 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eu7340.egliseteste.MainActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

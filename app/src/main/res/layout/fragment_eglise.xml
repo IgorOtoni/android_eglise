@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EgliseFragment">
+    tools:context=".Fragments.EgliseFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,6 +18,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Temos uma forma fácil para você, líder, providenciar uma página de internet inteirinha da sua igreja. Temos três modelos à sua disposição.  Com ela você irá manter seu público informado sobre as programações de sua igreja e usá-lo como um canal de evangelismo, postando suas mensagens e divulgando o evangelho de Cristo. Você poderá ainda usufruir de vários benefícios que estamos desenvolvendo para facilitar seu trabalho, como o controle do rol de membros, dízimos, etc." />
+
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center"
+            android:layout_margin="30dp"
+            android:src="@drawable/icon"/>
 
     </LinearLayout>
 

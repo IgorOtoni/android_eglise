@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.eu7340.egliseteste.AppCongregacao;
 import com.example.eu7340.egliseteste.EventoFixoActivity;
 import com.example.eu7340.egliseteste.Models.EventoFixo;
 import com.example.eu7340.egliseteste.R;
@@ -29,6 +28,8 @@ public class EventoFixoListView extends LinearLayout {
     private EventoFixo eventofixo;
     private View view;
 
+    private CarregaFotoEventoFixo carregaFotoEventoFixo_task;
+
     public EventoFixoListView(Context context, AttributeSet attrs, EventoFixo eventofixo) {
         super(context, attrs);
         this.eventofixo = eventofixo;
@@ -44,7 +45,7 @@ public class EventoFixoListView extends LinearLayout {
         TextView dados = view.findViewById(R.id.eventofixo_dados);
         dados.setText(eventofixo.getDados_horario_local());
         
-        CarregaFotoEventoFixo carregaFotoEventoFixo_task = new CarregaFotoEventoFixo();
+        carregaFotoEventoFixo_task = new CarregaFotoEventoFixo();
         carregaFotoEventoFixo_task.execute(eventofixo);
 
         ImageButton bt = view.findViewById(R.id.eventofixo_bt);

@@ -1,24 +1,27 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import java.sql.Date;
 
 @DatabaseTable(tableName = "tbl_sermoes")
 public class Sermao {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_igreja;
+    @DatabaseField(foreign = true, columnName = "id_igreja")
+    private Congregacao congregacao;
     @DatabaseField
     private String nome;
     @DatabaseField
     private String link;
     @DatabaseField
     private String descricao;
-    @DatabaseField
-    private String created_at;
-    @DatabaseField
-    private String updated_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date created_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date updated_at;
 
     public int getId() {
         return id;
@@ -26,14 +29,6 @@ public class Sermao {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getId_igreja() {
-        return id_igreja;
-    }
-
-    public void setId_igreja(int id_igreja) {
-        this.id_igreja = id_igreja;
     }
 
     public String getNome() {
@@ -60,19 +55,27 @@ public class Sermao {
         this.descricao = descricao;
     }
 
-    public String getCreated_at() {
+    public Congregacao getCongregacao() {
+        return congregacao;
+    }
+
+    public void setCongregacao(Congregacao congregacao) {
+        this.congregacao = congregacao;
+    }
+
+    public Date getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
-    public String getUpdated_at() {
+    public Date getUpdated_at() {
         return updated_at;
     }
 
-    public void setUpdated_at(String updated_at) {
+    public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
     }
 }

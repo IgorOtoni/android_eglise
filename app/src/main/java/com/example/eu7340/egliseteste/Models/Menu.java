@@ -1,24 +1,27 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import java.sql.Date;
 
 @DatabaseTable(tableName = "tbl_menus_android")
 public class Menu {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_configuracao;
+    @DatabaseField(foreign = true, columnName = "id_configuracao")
+    private Configuracao configuracao;
     @DatabaseField
     private int ordem;
     @DatabaseField
     private String nome;
     @DatabaseField
     private String link;
-    @DatabaseField
-    private String created_at;
-    @DatabaseField
-    private String updated_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date created_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date updated_at;
 
     public int getId() {
         return id;
@@ -26,14 +29,6 @@ public class Menu {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getId_configuracao() {
-        return id_configuracao;
-    }
-
-    public void setId_configuracao(int id_configuracao) {
-        this.id_configuracao = id_configuracao;
     }
 
     public int getOrdem() {
@@ -60,20 +55,28 @@ public class Menu {
         this.link = link;
     }
 
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
-    public String getUpdated_at() {
+    public Date getUpdated_at() {
         return updated_at;
     }
 
-    public void setUpdated_at(String updated_at) {
+    public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public Configuracao getConfiguracao() {
+        return configuracao;
+    }
+
+    public void setConfiguracao(Configuracao configuracao) {
+        this.configuracao = configuracao;
     }
 }
 

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 public class PublicacaoListView extends LinearLayout {
 
@@ -40,11 +41,13 @@ public class PublicacaoListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.publicacao_nome);
         nome.setText(publicacao.getNome());
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
         String txt_data = "";
         if(publicacao.getUpdated_at() != null && publicacao.getUpdated_at().compareTo(publicacao.getCreated_at()) == 0){
-            txt_data = "Atualizada em " + publicacao.getUpdated_at();
+            txt_data = "Atualizada em " + sdf.format(publicacao.getUpdated_at());
         }else{
-            txt_data = "Publicada em " + publicacao.getCreated_at();
+            txt_data = "Publicada em " + sdf.format(publicacao.getCreated_at());
         }
 
         TextView data = view.findViewById(R.id.publicacao_data);

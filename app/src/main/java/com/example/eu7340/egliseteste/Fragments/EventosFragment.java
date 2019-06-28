@@ -23,7 +23,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class EventosFragment extends Fragment {
+
     private Congregacao congregacao;
+
+    private ScrollView scrollView;
+
+    private CarregaEventoss carregaEventos_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,11 +44,28 @@ public class EventosFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        EventosFragment.CarregaEventoss carregaEventoss_task = new EventosFragment.CarregaEventoss(view);
-        carregaEventoss_task.execute(congregacao);
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carregaEventoss_task = new CarregaEventoss(view);
+        carregaEventoss_task.execute(congregacao);*/
 
         return view;
     }
+
+    public void onResume(){
+        super.onResume();
+
+        if(carregaEventos_task != null) carregaEventos_task.cancel(true);
+        carregaEventos_task = new CarregaEventoss(getView());
+        carregaEventos_task.execute(congregacao);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaEventos_task != null) carregaEventos_task.cancel(true);
+    }
+
     public static EventosFragment newInstance() {
         return new EventosFragment();
     }
@@ -62,29 +90,6 @@ public class EventosFragment extends Fragment {
                 for (int x = 0; x < eventos.size(); x++) {
                     final Evento evento = eventos.get(x);
                     EventoListView evento_view = new EventoListView(getContext(), null, evento);
-                    /*final LinearLayout _linearLayout = new LinearLayout(view.getContext());
-                    final LinearLayout _linearLayout_ = new LinearLayout(view.getContext());
-                    _linearLayout_.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-                    final EditText nm_etapa = new EditText(view.getContext());
-                    nm_etapa.setEnabled(false);
-                    nm_etapa.setText(publicacoes.get(x).getNome());
-                    final ImageView line = new ImageView(view.getContext());
-                    line.setImageResource(R.drawable.line);
-                    line.setScaleType(ImageView.ScaleType.FIT_XY);
-                    line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-                    final ImageButton bt_site = new ImageButton(view.getContext());
-                    bt_site.setImageResource(R.drawable.pesquisar);
-                    bt_site.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ver_evento(evento);
-                        }
-                    });
-                    _linearLayout.addView(bt_site);
-                    _linearLayout.addView(nm_etapa);
-                    _linearLayout_.addView(line);
-                    linearLayout.addView(_linearLayout);
-                    linearLayout.addView(_linearLayout_);*/
                     linearLayout.addView(evento_view);
                     linearLayout.setOrientation(LinearLayout.VERTICAL);
                 }
@@ -98,8 +103,10 @@ public class EventosFragment extends Fragment {
         }
 
         protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
-            scrollView.addView(linearLayout);
+            if(linearLayout != null) {
+                scrollView.removeAllViews();
+                scrollView.addView(linearLayout);
+            }
         }
     }
 }

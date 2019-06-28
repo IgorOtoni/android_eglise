@@ -8,11 +8,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.eu7340.egliseteste.AppCongregacao;
 import com.example.eu7340.egliseteste.Models.Sermao;
 import com.example.eu7340.egliseteste.R;
 import com.example.eu7340.egliseteste.SermaoActivity;
 import com.google.gson.Gson;
+
+import java.text.SimpleDateFormat;
 
 public class SermaoListView extends LinearLayout {
 
@@ -31,11 +32,13 @@ public class SermaoListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.sermao_nome);
         nome.setText(sermao.getNome());
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
         String txt_data = "";
         if(sermao.getUpdated_at() != null && sermao.getUpdated_at().compareTo(sermao.getCreated_at()) == 0){
-            txt_data = "Atualizado em " + sermao.getUpdated_at();
+            txt_data = "Atualizado em " + sdf.format(sermao.getUpdated_at());
         }else{
-            txt_data = "Publicado em " + sermao.getCreated_at();
+            txt_data = "Publicado em " + sdf.format(sermao.getCreated_at());
         }
 
         TextView data = view.findViewById(R.id.sermao_data);

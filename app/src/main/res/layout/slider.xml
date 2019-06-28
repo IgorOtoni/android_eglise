@@ -13,6 +13,7 @@
         android:fillViewport="false">
 
         <LinearLayout
+            android:id="@+id/main_linear_layout"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -27,7 +28,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
-
                 <android.support.design.widget.TabLayout
                     android:id="@+id/indicator"
                     android:layout_width="match_parent"
@@ -37,6 +37,7 @@
                     app:tabBackground="@drawable/indicator_selector"
                     app:tabGravity="center"
                     app:tabIndicatorHeight="0dp" />
+
             </RelativeLayout>
 
             <TextView
@@ -44,6 +45,33 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"/>
+
+            <TextView
+                android:id="@+id/congregacao_telefone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"/>
+
+            <TextView
+                android:id="@+id/congregacao_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"/>
+
+            <LinearLayout
+                android:id="@+id/map_container"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:orientation="vertical" />
 
         </LinearLayout>
 

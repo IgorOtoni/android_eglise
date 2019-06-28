@@ -20,11 +20,22 @@ import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GaleriasFragment extends Fragment {
 
     private Congregacao congregacao;
+
+    private ScrollView scrollView;
+
+    private CarregaGalerias carregaGalerias_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -34,16 +45,37 @@ public class GaleriasFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        CarregaGalerias carregaGalerias_task = new CarregaGalerias(view);
-        carregaGalerias_task.execute(congregacao);
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carregaGalerias_task = new CarregaGalerias(view);
+        carregaGalerias_task.execute(congregacao);*/
 
         return view;
     }
+
+    public void onResume(){
+        super.onResume();
+
+        if(carregaGalerias_task != null) carregaGalerias_task.cancel(true);
+        carregaGalerias_task = new CarregaGalerias(getView());
+        carregaGalerias_task.execute(congregacao);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaGalerias_task != null) carregaGalerias_task.cancel(true);
+    }
+
     public static GaleriasFragment newInstance() {
         return new GaleriasFragment();
     }
 
-    private class CarregaGalerias extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class DadosGalerias{
+        public Galeria galeria;
+    }
+
+    private class CarregaGalerias extends AsyncTask<Congregacao, Object, List<DadosGalerias>> {
 
         private final View view;
 
@@ -51,9 +83,9 @@ public class GaleriasFragment extends Fragment {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public List<DadosGalerias> doInBackground(Congregacao... objects) {
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
+                List<DadosGalerias> dados_galerias = new ArrayList<>();
 
                 GaleriaDAO galeriaDAO = new GaleriaDAO(DB.connection);
                 QueryBuilder<Galeria, Integer> _filtro = galeriaDAO.queryBuilder();
@@ -61,13 +93,12 @@ public class GaleriasFragment extends Fragment {
                 PreparedQuery<Galeria> preparedQuery = _filtro.prepare();
                 List<Galeria> galerias = galeriaDAO.query(preparedQuery);
                 for (int x = 0; x < galerias.size(); x++) {
-                    final Galeria galeria = galerias.get(x);
-                    GaleriaListView galeria_view = new GaleriaListView(getContext(), null, galeria);
-                    linearLayout.addView(galeria_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    DadosGalerias dado_galeria = new DadosGalerias();
+                    dado_galeria.galeria = galerias.get(x);
+                    dados_galerias.add(dado_galeria);
                 }
 
-                return linearLayout;
+                return dados_galerias;
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -75,8 +106,16 @@ public class GaleriasFragment extends Fragment {
             return null;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+        protected void onPostExecute(List<DadosGalerias> dados_galerias) {
+            LinearLayout linearLayout = new LinearLayout(view.getContext());
+
+            for (int x = 0; x < dados_galerias.size(); x++) {
+                GaleriaListView galeria_view = new GaleriaListView(view.getContext(), null, dados_galerias.get(x).galeria);
+                linearLayout.addView(galeria_view);
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+            }
+
+            scrollView.removeAllViews();
             scrollView.addView(linearLayout);
         }
     }

@@ -26,6 +26,16 @@ public class NoticiasFragment extends Fragment {
 
     private Congregacao congregacao;
 
+    private ScrollView scrollView;
+
+    private CarregaNoticias carregaNoticias_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -34,11 +44,29 @@ public class NoticiasFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        CarregaNoticias carregaNoticias_task = new CarregaNoticias(view);
-        carregaNoticias_task.execute(congregacao);
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carregaNoticias_task = new CarregaNoticias(view);
+        carregaNoticias_task.execute(congregacao);*/
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(carregaNoticias_task != null) carregaNoticias_task.cancel(true);
+        carregaNoticias_task = new CarregaNoticias(getView());
+        carregaNoticias_task.execute(congregacao);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaNoticias_task != null) carregaNoticias_task.cancel(true);
+    }
+
     public static NoticiasFragment newInstance() {
         return new NoticiasFragment();
     }
@@ -76,7 +104,7 @@ public class NoticiasFragment extends Fragment {
         }
 
         protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+            scrollView.removeAllViews();
             scrollView.addView(linearLayout);
         }
     }

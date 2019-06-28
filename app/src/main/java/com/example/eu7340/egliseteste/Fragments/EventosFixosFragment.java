@@ -23,7 +23,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class EventosFixosFragment extends Fragment {
+
     private Congregacao congregacao;
+
+    private ScrollView scrollView;
+
+    private CarregaEventosFixos carregaEventosFixos_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,11 +44,28 @@ public class EventosFixosFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        EventosFixosFragment.CarregaEventosFixos carregaEventosFixos_task = new EventosFixosFragment.CarregaEventosFixos(view);
-        carregaEventosFixos_task.execute(congregacao);
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carregaEventosFixos_task = new CarregaEventosFixos(view);
+        carregaEventosFixos_task.execute(congregacao);*/
 
         return view;
     }
+
+    public void onResume(){
+        super.onResume();
+
+        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(true);
+        carregaEventosFixos_task = new CarregaEventosFixos(getView());
+        carregaEventosFixos_task.execute(congregacao);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(true);
+    }
+
     public static EventosFixosFragment newInstance() {
         return new EventosFixosFragment();
     }
@@ -75,7 +103,7 @@ public class EventosFixosFragment extends Fragment {
         }
 
         protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+            scrollView.removeAllViews();
             scrollView.addView(linearLayout);
         }
     }

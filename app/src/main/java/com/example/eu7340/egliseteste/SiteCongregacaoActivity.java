@@ -18,7 +18,7 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import java.sql.SQLException;
 import java.util.List;
 
-public class SiteCongregacao extends AppCompatActivity {
+public class SiteCongregacaoActivity extends AppCompatActivity {
 
     private WebView webView;
 

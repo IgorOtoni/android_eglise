@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.eu7340.egliseteste.AppCongregacao;
 import com.example.eu7340.egliseteste.Models.Noticia;
 import com.example.eu7340.egliseteste.NoticiaActivity;
 import com.example.eu7340.egliseteste.R;
@@ -23,11 +22,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 public class NoticiaListView extends LinearLayout {
 
     private Noticia noticia;
     private View view;
+
+    private CarregaFotoNoticia carregaFotoNoticia_task;
 
     public NoticiaListView(Context context, AttributeSet attrs, Noticia noticia) {
         super(context, attrs);
@@ -41,17 +43,19 @@ public class NoticiaListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.noticia_nome);
         nome.setText(noticia.getNome());
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
         String txt_data = "";
         if(noticia.getUpdated_at() != null && noticia.getUpdated_at().compareTo(noticia.getCreated_at()) == 0){
-            txt_data = "Atualizada em " + noticia.getUpdated_at();
+            txt_data = "Atualizada em " + sdf.format(noticia.getUpdated_at());
         }else{
-            txt_data = "Publicada em " + noticia.getCreated_at();
+            txt_data = "Publicada em " + sdf.format(noticia.getCreated_at());
         }
 
         TextView data = view.findViewById(R.id.noticia_data);
         data.setText(txt_data);
 
-        CarregaFotoNoticia carregaFotoNoticia_task = new CarregaFotoNoticia();
+        carregaFotoNoticia_task = new CarregaFotoNoticia();
         carregaFotoNoticia_task.execute(noticia);
 
         ImageButton bt = view.findViewById(R.id.noticia_bt);

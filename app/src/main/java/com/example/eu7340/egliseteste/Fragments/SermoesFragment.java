@@ -23,7 +23,16 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class SermoesFragment extends Fragment {
+
     private Congregacao congregacao;
+
+    private CarregaSermoes carregaSermoes_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,11 +42,28 @@ public class SermoesFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        SermoesFragment.CarregaSermoes carregaSermoes_task = new SermoesFragment.CarregaSermoes(view);
-        carregaSermoes_task.execute(congregacao);
+        /*carregaSermoes_task = new CarregaSermoes(view);
+        carregaSermoes_task.execute(congregacao);*/
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(carregaSermoes_task != null) carregaSermoes_task.cancel(true);
+        carregaSermoes_task = new CarregaSermoes(getView());
+        carregaSermoes_task.execute(congregacao);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(carregaSermoes_task != null) carregaSermoes_task.cancel(true);
+    }
+
     public static SermoesFragment newInstance() {
         return new SermoesFragment();
     }

@@ -1,16 +1,19 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import java.sql.Date;
 
 @DatabaseTable(tableName = "tbl_configuracoes")
 public class Configuracao {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_igreja;
-    @DatabaseField
-    private int id_template;
+    @DatabaseField(foreign = true, columnName = "id_igreja")
+    private Congregacao congregacao;
+    @DatabaseField(foreign = true, columnName = "id_template")
+    private Template template;
     @DatabaseField
     private String cor;
     @DatabaseField
@@ -23,10 +26,10 @@ public class Configuracao {
     private String twitter;
     @DatabaseField
     private String youtube;
-    @DatabaseField
-    private String created_at;
-    @DatabaseField
-    private String updated_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date created_at;
+    @DatabaseField(dataType = DataType.SQL_DATE)
+    private Date updated_at;
 
     public int getId() {
         return id;
@@ -34,22 +37,6 @@ public class Configuracao {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getId_igreja() {
-        return id_igreja;
-    }
-
-    public void setId_igreja(int id_igreja) {
-        this.id_igreja = id_igreja;
-    }
-
-    public int getId_template() {
-        return id_template;
-    }
-
-    public void setId_template(int id_template) {
-        this.id_template = id_template;
     }
 
     public String getCor() {
@@ -100,20 +87,36 @@ public class Configuracao {
         this.youtube = youtube;
     }
 
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
-    public String getUpdated_at() {
+    public Date getUpdated_at() {
         return updated_at;
     }
 
-    public void setUpdated_at(String updated_at) {
+    public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public Congregacao getCongregacao() {
+        return congregacao;
+    }
+
+    public void setCongregacao(Congregacao congregacao) {
+        this.congregacao = congregacao;
+    }
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
     }
 }
 

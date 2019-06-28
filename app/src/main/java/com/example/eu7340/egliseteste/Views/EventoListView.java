@@ -22,11 +22,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 public class EventoListView extends LinearLayout {
 
     private Evento evento;
     private View view;
+
+    private CarregaLogoEvento carregaLogoEvento_task;
 
     public EventoListView(Context context, AttributeSet attrs, Evento evento) {
         super(context, attrs);
@@ -40,8 +43,10 @@ public class EventoListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.evento_nome);
         nome.setText(evento.getNome());
 
-        String txt_data_inicio = "Início: " + evento.getDados_horario_inicio();
-        String txt_data_fim = "Término: " + evento.getDados_horario_fim();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        String txt_data_inicio = "Início: " + sdf.format(evento.getDados_horario_inicio());
+        String txt_data_fim = "Término: " + sdf.format(evento.getDados_horario_fim());
         String txt_local = evento.getDados_local();
 
         TextView data_inicio = view.findViewById(R.id.evento_data_inicio);
@@ -53,7 +58,7 @@ public class EventoListView extends LinearLayout {
         TextView local = view.findViewById(R.id.evento_local);
         local.setText(txt_local);
 
-        CarregaLogoEvento carregaLogoEvento_task = new CarregaLogoEvento();
+        carregaLogoEvento_task = new CarregaLogoEvento();
         carregaLogoEvento_task.execute(evento);
 
         ImageButton bt = view.findViewById(R.id.evento_bt);

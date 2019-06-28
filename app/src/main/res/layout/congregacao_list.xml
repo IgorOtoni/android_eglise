@@ -5,41 +5,40 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="0.25"
-        android:visibility="invisible"/>
-
     <TextView
         android:id="@+id/congregacao_nome"
         android:layout_width="wrap_content"
         android:maxWidth="200dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text="Nome"
         android:textSize="20dp"
         android:textStyle="bold"
-        tools:text="Nome"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:layout_marginLeft="15dp"/>
 
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:visibility="invisible"/>
 
     <ImageView
         android:id="@+id/congregacao_logo"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:layout_marginLeft="15dp"/>
 
     <ImageButton
         android:id="@+id/congregacao_bt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="0dp"
+        android:layout_margin="15dp"
         android:src="@drawable/pesquisar"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:bottomRightRadius="10dp"
+        android:bottomLeftRadius="10dp"
+        android:topLeftRadius="10dp"
+        android:topRightRadius="10dp" />
 
 </LinearLayout>

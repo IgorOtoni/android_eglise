@@ -1,5 +1,6 @@
 package com.example.eu7340.egliseteste;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,17 +23,30 @@ import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.DB.ConfiguracaoDAO;
 import com.example.eu7340.egliseteste.DB.DB;
+import com.example.eu7340.egliseteste.DB.EventoDAO;
+import com.example.eu7340.egliseteste.DB.EventoFixoDAO;
+import com.example.eu7340.egliseteste.DB.GaleriaDAO;
 import com.example.eu7340.egliseteste.DB.MenuDAO;
+import com.example.eu7340.egliseteste.DB.NoticiaDAO;
+import com.example.eu7340.egliseteste.DB.PublicacaoDAO;
+import com.example.eu7340.egliseteste.DB.SermaoDAO;
 import com.example.eu7340.egliseteste.Fragments.EventosFixosFragment;
 import com.example.eu7340.egliseteste.Fragments.EventosFragment;
 import com.example.eu7340.egliseteste.Fragments.GaleriasFragment;
 import com.example.eu7340.egliseteste.Fragments.HomeFragment;
+import com.example.eu7340.egliseteste.Fragments.LoginFragment;
 import com.example.eu7340.egliseteste.Fragments.NoticiasFragment;
 import com.example.eu7340.egliseteste.Fragments.PublicacoesFragment;
 import com.example.eu7340.egliseteste.Fragments.SermoesFragment;
 import com.example.eu7340.egliseteste.Models.Configuracao;
 import com.example.eu7340.egliseteste.Models.Congregacao;
+import com.example.eu7340.egliseteste.Models.Evento;
+import com.example.eu7340.egliseteste.Models.EventoFixo;
+import com.example.eu7340.egliseteste.Models.Galeria;
 import com.example.eu7340.egliseteste.Models.Menu;
+import com.example.eu7340.egliseteste.Models.Noticia;
+import com.example.eu7340.egliseteste.Models.Publicacao;
+import com.example.eu7340.egliseteste.Models.Sermao;
 import com.example.eu7340.egliseteste.utils.Sessao;
 import com.google.gson.Gson;
 import com.j256.ormlite.stmt.PreparedQuery;
@@ -46,8 +60,10 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 
-public class AppCongregacao extends AppCompatActivity
+public class AppCongregacaoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static Fragment last_fragment;
 
     private Congregacao congregacao;
     private Configuracao configuracao;
@@ -56,6 +72,10 @@ public class AppCongregacao extends AppCompatActivity
     private List<Menu> menus;
     private android.view.Menu sub_menu;
     private ImageView logo;
+
+    private CarregaLogoCongregacao carregaLogoCongregacao_task;
+    private CarregaLinksCongregacao carregaLinksCongregacao_task;
+    private CarregaMenusCongregacao carregaMenusCongregacao_task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +102,7 @@ public class AppCongregacao extends AppCompatActivity
             String congregacao_json = gson.toJson(congregacao);
             String configuracao_json = gson.toJson(configuracao);
 
-            Intent intent = new Intent(this, AppCongregacao.class);
+            Intent intent = new Intent(this, AppCongregacaoActivity.class);
 
             intent.putExtra("congregacao_app", congregacao_json);
             intent.putExtra("configuracao_app", configuracao_json);
@@ -102,7 +122,7 @@ public class AppCongregacao extends AppCompatActivity
 
         getSupportActionBar().setTitle(congregacao.getNome());
 
-        CarregaLogoCongregacao carregaLogoCongregacao_task = new CarregaLogoCongregacao();
+        carregaLogoCongregacao_task = new CarregaLogoCongregacao();
         carregaLogoCongregacao_task.execute(congregacao);
 
         TextView congregacao_nome = headerView.findViewById(R.id.congregacao_nome);
@@ -111,13 +131,22 @@ public class AppCongregacao extends AppCompatActivity
         if(congregacao.getEmail() == null) congregacao_email.setVisibility(View.GONE);
         else congregacao_email.setText(congregacao.getEmail());
 
-        CarregaLinksCongregacao carregaLinksCongregacao_task = new CarregaLinksCongregacao();
+        carregaLinksCongregacao_task = new CarregaLinksCongregacao();
         carregaLinksCongregacao_task.execute(congregacao);
 
-        CarregaMenusCongregacao carregaMenusCongregacao_task = new CarregaMenusCongregacao();
+        carregaMenusCongregacao_task = new CarregaMenusCongregacao();
         carregaMenusCongregacao_task.execute(congregacao);
 
-        openFragment(HomeFragment.newInstance());
+        if(last_fragment == null) openFragment(HomeFragment.newInstance());
+        else openFragment(last_fragment);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaLogoCongregacao_task != null) carregaLogoCongregacao_task.cancel(true);
+        if(carregaLinksCongregacao_task != null) carregaLinksCongregacao_task.cancel(true);
+        if(carregaMenusCongregacao_task != null) carregaMenusCongregacao_task.cancel(true);
     }
 
     private class CarregaMenusCongregacao extends AsyncTask<Congregacao, Void, List<Menu>> {
@@ -242,12 +271,14 @@ public class AppCongregacao extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        /*DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
-        }
+        }*/
+        last_fragment = null;
+        finish();
     }
 
     @Override
@@ -266,9 +297,9 @@ public class AppCongregacao extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        /*if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
@@ -283,9 +314,14 @@ public class AppCongregacao extends AppCompatActivity
         for(int cont = 0; cont < menus.size(); cont++){
             if(id == menus.get(cont).getId()){
                 MenuItem menu_item = menu.findItem(menus.get(cont).getId());
-                if(menus.get(cont).getLink().contains("modulo")) {
+                if(menus.get(cont).getLink().contains("http://") || menus.get(cont).getLink().contains("https://")){
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(menus.get(cont).getLink())));
+                }else if(menus.get(cont).getLink().contains("modulo")) {
                     String[] split = menus.get(cont).getLink().split("-");
                     switch(split[1]){
+                        case "apresentacao":
+                            openFragment(HomeFragment.newInstance());
+                            break;
                         case "eventos":
                             openFragment(EventosFragment.newInstance());
                             break;
@@ -300,20 +336,44 @@ public class AppCongregacao extends AppCompatActivity
                             break;
                         case "sermoes":
                             openFragment(SermoesFragment.newInstance());
+                            break;
                         case "galerias":
                             openFragment(GaleriasFragment.newInstance());
                             break;
+                        case "login":
+                            openFragment(LoginFragment.newInstance());
+                            break;
                     }
                 }else if(menus.get(cont).getLink().contains("evento")) {
-
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_evento = Integer.parseInt(split[1]);
+                    AbrirEventoActivity abrirEventoActivity = new AbrirEventoActivity(this);
+                    abrirEventoActivity.execute(id_evento);
                 }else if(menus.get(cont).getLink().contains("noticia")) {
-
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_noticia = Integer.parseInt(split[1]);
+                    AbrirNoticiaActivity abrirNoticiaActivity = new AbrirNoticiaActivity(this);
+                    abrirNoticiaActivity.execute(id_noticia);
                 }else if(menus.get(cont).getLink().contains("eventofixo")) {
-
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_eventofixo = Integer.parseInt(split[1]);
+                    AbrirEventoFixoActivity abrirEventoFixoActivity = new AbrirEventoFixoActivity(this);
+                    abrirEventoFixoActivity.execute(id_eventofixo);
                 }else if(menus.get(cont).getLink().contains("publicacao")) {
-
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_publicacao = Integer.parseInt(split[1]);
+                    AbrirPublicacaoActivity abrirPublicacaoActivity = new AbrirPublicacaoActivity(this);
+                    abrirPublicacaoActivity.execute(id_publicacao);
                 }else if(menus.get(cont).getLink().contains("sermao")) {
-
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_sermao = Integer.parseInt(split[1]);
+                    AbrirSermaoActivity abrirSermaoActivity = new AbrirSermaoActivity(this);
+                    abrirSermaoActivity.execute(id_sermao);
+                }else if(menus.get(cont).getLink().contains("galeria")) {
+                    String[] split = menus.get(cont).getLink().split("-");
+                    int id_galeria = Integer.parseInt(split[1]);
+                    AbrirGaleriaActivity abrirGaleriaActivity = new AbrirGaleriaActivity(this);
+                    abrirGaleriaActivity.execute(id_galeria);
                 }
             }
         }
@@ -332,9 +392,226 @@ public class AppCongregacao extends AppCompatActivity
     }
 
     private void openFragment(Fragment fragment) {
+        last_fragment = fragment;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container_app_congregacao, fragment);
         //transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private class AbrirEventoActivity extends AsyncTask<Integer, Void, Evento> {
+
+        private Context context;
+
+        public AbrirEventoActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Evento doInBackground(Integer... id) {
+            try {
+
+                EventoDAO eventoDAO = new EventoDAO(DB.connection);
+                Evento evento = eventoDAO.queryForId(id[0]);
+                return evento;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Evento evento) {
+            Gson gson = new Gson();
+            String evento_json = gson.toJson(evento);
+
+            Intent intent = new Intent(context, EventoActivity.class);
+
+            intent.putExtra("evento_detalhe", evento_json);
+
+            context.startActivity(intent);
+        }
+    }
+
+    private class AbrirEventoFixoActivity extends AsyncTask<Integer, Void, EventoFixo> {
+
+        private Context context;
+
+        public AbrirEventoFixoActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected EventoFixo doInBackground(Integer... id) {
+            try {
+
+                EventoFixoDAO eventofixoDAO = new EventoFixoDAO(DB.connection);
+                EventoFixo eventofixo = eventofixoDAO.queryForId(id[0]);
+                return eventofixo;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(EventoFixo eventofixo) {
+            Gson gson = new Gson();
+            String eventofixo_json = gson.toJson(eventofixo);
+
+            Intent intent = new Intent(context, EventoFixoActivity.class);
+
+            intent.putExtra("eventofixo_detalhe", eventofixo_json);
+
+            context.startActivity(intent);
+        }
+    }
+
+    private class AbrirSermaoActivity extends AsyncTask<Integer, Void, Sermao> {
+
+        private Context context;
+
+        public AbrirSermaoActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Sermao doInBackground(Integer... id) {
+            try {
+
+                SermaoDAO sermaoDAO = new SermaoDAO(DB.connection);
+                Sermao sermao = sermaoDAO.queryForId(id[0]);
+                return sermao;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Sermao sermao) {
+            Gson gson = new Gson();
+            String sermao_json = gson.toJson(sermao);
+
+            Intent intent = new Intent(context, SermaoActivity.class);
+
+            intent.putExtra("sermao_detalhe", sermao_json);
+
+            context.startActivity(intent);
+        }
+    }
+
+    private class AbrirGaleriaActivity extends AsyncTask<Integer, Void, Galeria> {
+
+        private Context context;
+
+        public AbrirGaleriaActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Galeria doInBackground(Integer... id) {
+            try {
+
+                GaleriaDAO galeriaDAO = new GaleriaDAO(DB.connection);
+                Galeria galeria = galeriaDAO.queryForId(id[0]);
+                return galeria;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Galeria galeria) {
+            Gson gson = new Gson();
+            String galeria_json = gson.toJson(galeria);
+
+            Intent intent = new Intent(context, GaleriaActivity.class);
+
+            intent.putExtra("galeria_detalhe", galeria_json);
+
+            context.startActivity(intent);
+        }
+    }
+
+    private class AbrirNoticiaActivity extends AsyncTask<Integer, Void, Noticia> {
+
+        private Context context;
+
+        public AbrirNoticiaActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Noticia doInBackground(Integer... id) {
+            try {
+
+                NoticiaDAO noticiaDAO = new NoticiaDAO(DB.connection);
+                Noticia noticia = noticiaDAO.queryForId(id[0]);
+                return noticia;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Noticia noticia) {
+            Gson gson = new Gson();
+            String noticia_json = gson.toJson(noticia);
+
+            Intent intent = new Intent(context, NoticiaActivity.class);
+
+            intent.putExtra("noticia_detalhe", noticia_json);
+
+            context.startActivity(intent);
+        }
+    }
+
+    private class AbrirPublicacaoActivity extends AsyncTask<Integer, Void, Publicacao> {
+
+        private Context context;
+
+        public AbrirPublicacaoActivity(Context context){
+            this.context = context;
+        }
+
+        @Override
+        protected Publicacao doInBackground(Integer... id) {
+            try {
+
+                PublicacaoDAO publicacaoDAO = new PublicacaoDAO(DB.connection);
+                Publicacao publicacao = publicacaoDAO.queryForId(id[0]);
+                return publicacao;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Publicacao publicacao) {
+            Gson gson = new Gson();
+            String publicacao_json = gson.toJson(publicacao);
+
+            Intent intent = new Intent(context, PublicacaoActivity.class);
+
+            intent.putExtra("publicacao_detalhe", publicacao_json);
+
+            context.startActivity(intent);
+        }
     }
 }

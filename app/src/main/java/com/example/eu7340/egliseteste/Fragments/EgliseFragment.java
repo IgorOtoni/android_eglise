@@ -9,11 +9,25 @@ import android.view.ViewGroup;
 import com.example.eu7340.egliseteste.R;
 
 public class EgliseFragment extends Fragment {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_eglise, container, false);
+        View view = inflater.inflate(R.layout.fragment_eglise, container, false);
+
+        return view;
     }
+
+    public void onDestroy(){
+        super.onDestroy();
+    }
+
     public static EgliseFragment newInstance() {
         return new EgliseFragment();
     }

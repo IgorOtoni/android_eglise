@@ -1,6 +1,5 @@
 package com.example.eu7340.egliseteste.Fragments;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import com.example.eu7340.egliseteste.AppCongregacao;
 import com.example.eu7340.egliseteste.DB.ConfiguracaoDAO;
 import com.example.eu7340.egliseteste.Models.Configuracao;
 import com.example.eu7340.egliseteste.Views.CongregacaoListView;
@@ -18,8 +16,6 @@ import com.example.eu7340.egliseteste.DB.CongregacaoDAO;
 import com.example.eu7340.egliseteste.DB.DB;
 import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.example.eu7340.egliseteste.R;
-import com.example.eu7340.egliseteste.SiteCongregacao;
-import com.google.gson.Gson;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 
@@ -28,16 +24,44 @@ import java.util.List;
 
 public class CongregacoesFragment extends Fragment {
 
+    private ScrollView scrollView;
+
+    private CarregaCongregacoes carrega_congregacoes_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_congregacoes, container, false);
 
-        CarregaCongregacoes carrega_congregacoes_task = new CarregaCongregacoes(view);
-        carrega_congregacoes_task.execute();
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carrega_congregacoes_task = new CarregaCongregacoes(view);
+        carrega_congregacoes_task.execute();*/
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(carrega_congregacoes_task != null) carrega_congregacoes_task.cancel(true);
+        carrega_congregacoes_task = new CarregaCongregacoes(getView());
+        carrega_congregacoes_task.execute();
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carrega_congregacoes_task != null) carrega_congregacoes_task.cancel(true);
+    }
+
     public static CongregacoesFragment newInstance() {
         CongregacoesFragment congregacoesFragment = new CongregacoesFragment();
 
@@ -50,28 +74,6 @@ public class CongregacoesFragment extends Fragment {
 
         public CarregaCongregacoes(View view) {
             this.view = view;
-        }
-
-        public void ver_site_congregacao(Congregacao congregacao){
-            Gson gson = new Gson();
-            String congregacao_json = gson.toJson(congregacao);
-
-            Intent intent = new Intent(view.getContext(), SiteCongregacao.class);
-
-            intent.putExtra("congregacao_app", congregacao_json);
-
-            startActivity(intent);
-        }
-
-        public void entrar_app_igreja(Congregacao congregacao){
-            Gson gson = new Gson();
-            String congregacao_json = gson.toJson(congregacao);
-
-            Intent intent = new Intent(view.getContext(), AppCongregacao.class);
-
-            intent.putExtra("json", congregacao_json);
-
-            startActivity(intent);
         }
 
         public LinearLayout doInBackground(Object... objects) {
@@ -90,7 +92,7 @@ public class CongregacoesFragment extends Fragment {
                     List<Configuracao> configuracoes = configuracaoDAO.query(preparedQuery);
 
                     final Congregacao congregacao = congregacoes.get(x);
-                    CongregacaoListView congregacao_list = new CongregacaoListView(getContext(), null, congregacao, (configuracoes != null && configuracoes.size() == 1 ? configuracoes.get(0) : null));
+                    CongregacaoListView congregacao_list = new CongregacaoListView(view.getContext(), null, congregacao, (configuracoes != null && configuracoes.size() == 1 ? configuracoes.get(0) : null));
                     linearLayout.addView(congregacao_list);
                     linearLayout.setOrientation(LinearLayout.VERTICAL);
                 }
@@ -104,7 +106,7 @@ public class CongregacoesFragment extends Fragment {
         }
 
         protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+            scrollView.removeAllViews();
             scrollView.addView(linearLayout);
         }
     }

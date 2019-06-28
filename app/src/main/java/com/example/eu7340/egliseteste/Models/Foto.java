@@ -1,5 +1,6 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -9,13 +10,13 @@ import java.sql.Date;
 public class Foto {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_galeria;
+    @DatabaseField(foreign = true, columnName = "id_galeria")
+    private Galeria galeria;
     @DatabaseField
     private String foto;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date created_at;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date updated_at;
 
     public int getId() {
@@ -24,14 +25,6 @@ public class Foto {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getId_galeria() {
-        return id_galeria;
-    }
-
-    public void setId_galeria(int id_galeria) {
-        this.id_galeria = id_galeria;
     }
 
     public String getFoto() {
@@ -56,5 +49,13 @@ public class Foto {
 
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public Galeria getGaleria() {
+        return galeria;
+    }
+
+    public void setGaleria(Galeria galeria) {
+        this.galeria = galeria;
     }
 }

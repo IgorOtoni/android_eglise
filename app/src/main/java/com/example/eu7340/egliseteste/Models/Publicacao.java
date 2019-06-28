@@ -1,5 +1,6 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -9,17 +10,17 @@ import java.sql.Date;
 public class Publicacao {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_igreja;
-    @DatabaseField
+    @DatabaseField(foreign = true, columnName = "id_igreja")
+    private Congregacao congregacao;
+    @DatabaseField(dataType = DataType.BOOLEAN)
     private boolean galeria;
     @DatabaseField
     private String nome;
     @DatabaseField
     private String html;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date created_at;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date updated_at;
 
     public int getId() {
@@ -28,14 +29,6 @@ public class Publicacao {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getId_igreja() {
-        return id_igreja;
-    }
-
-    public void setId_igreja(int id_igreja) {
-        this.id_igreja = id_igreja;
     }
 
     public boolean isGaleria() {
@@ -76,5 +69,13 @@ public class Publicacao {
 
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public Congregacao getCongregacao() {
+        return congregacao;
+    }
+
+    public void setCongregacao(Congregacao congregacao) {
+        this.congregacao = congregacao;
     }
 }

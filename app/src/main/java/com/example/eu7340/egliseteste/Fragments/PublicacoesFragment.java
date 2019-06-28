@@ -29,6 +29,16 @@ public class PublicacoesFragment extends Fragment {
 
     private Congregacao congregacao;
 
+    private ScrollView scrollView;
+
+    private CarregaPublicacoes carregaPublicacoes_task;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -37,11 +47,28 @@ public class PublicacoesFragment extends Fragment {
         Gson gson = new Gson();
         this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
 
-        CarregaPublicacoes carregaPublicacoes_task = new CarregaPublicacoes(view);
-        carregaPublicacoes_task.execute(congregacao);
+        scrollView = view.findViewById(R.id.scrollView);
+
+        /*carregaPublicacoes_task = new CarregaPublicacoes(view);
+        carregaPublicacoes_task.execute(congregacao);*/
 
         return view;
     }
+
+    public void onResume(){
+        super.onResume();
+
+        if(carregaPublicacoes_task != null) carregaPublicacoes_task.cancel(true);
+        carregaPublicacoes_task = new CarregaPublicacoes(getView());
+        carregaPublicacoes_task.execute(congregacao);
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+
+        if(carregaPublicacoes_task != null) carregaPublicacoes_task.cancel(true);
+    }
+
     public static PublicacoesFragment newInstance() {
         return new PublicacoesFragment();
     }
@@ -79,7 +106,7 @@ public class PublicacoesFragment extends Fragment {
         }
 
         protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
+            scrollView.removeAllViews();
             scrollView.addView(linearLayout);
         }
     }

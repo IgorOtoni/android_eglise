@@ -17,7 +17,7 @@
             android:text="TextView"
             android:textSize="15dp"
             android:textStyle="bold"
-            android:layout_marginLeft="25dp"
+            android:layout_marginLeft="15dp"
             tools:text="Nome"
             android:layout_gravity="center" />
 
@@ -35,23 +35,27 @@
             android:layout_height="wrap_content"
             android:text="TextView"
             android:textSize="15dp"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="15dp"
             tools:text="Data"
             android:layout_gravity="center" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:visibility="invisible"/>
 
         <ImageButton
             android:id="@+id/sermao_bt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="0dp"
+            android:layout_margin="15dp"
             android:src="@drawable/pesquisar"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:bottomRightRadius="10dp"
+            android:bottomLeftRadius="10dp"
+            android:topLeftRadius="10dp"
+            android:topRightRadius="10dp" />
 
     </LinearLayout>
 

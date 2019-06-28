@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.eu7340.egliseteste.AppCongregacao;
+import com.example.eu7340.egliseteste.AppCongregacaoActivity;
 import com.example.eu7340.egliseteste.Models.Configuracao;
 import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.example.eu7340.egliseteste.R;
@@ -30,6 +30,8 @@ public class CongregacaoListView extends LinearLayout {
     private Configuracao configuracao;
     private View view;
 
+    private CarregaLogoCongregacao carregaLogoCongregacao_task;
+
     public CongregacaoListView(Context context, AttributeSet attrs, Congregacao congregacao, Configuracao configuracao) {
         super(context, attrs);
         this.congregacao = congregacao;
@@ -43,7 +45,7 @@ public class CongregacaoListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.congregacao_nome);
         nome.setText(congregacao.getNome());
 
-        CarregaLogoCongregacao carregaLogoCongregacao_task = new CarregaLogoCongregacao();
+        carregaLogoCongregacao_task = new CarregaLogoCongregacao();
         carregaLogoCongregacao_task.execute(congregacao);
 
         ImageButton bt = view.findViewById(R.id.congregacao_bt);
@@ -65,7 +67,7 @@ public class CongregacaoListView extends LinearLayout {
         String congregacao_json = gson.toJson(congregacao);
         String configuracao_json = gson.toJson(configuracao);
 
-        Intent intent = new Intent(getContext(), AppCongregacao.class);
+        Intent intent = new Intent(getContext(), AppCongregacaoActivity.class);
 
         intent.putExtra("congregacao_app", congregacao_json);
         intent.putExtra("configuracao_app", configuracao_json);

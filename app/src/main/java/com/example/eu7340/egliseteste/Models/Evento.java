@@ -1,5 +1,6 @@
 package com.example.eu7340.egliseteste.Models;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -9,23 +10,23 @@ import java.sql.Date;
 public class Evento {
     @DatabaseField(generatedId = true)
     private int id;
-    @DatabaseField
-    private int id_igreja;
+    @DatabaseField(foreign = true, columnName = "id_igreja")
+    private Congregacao congregacao;
     @DatabaseField
     private String nome;
-    @DatabaseField
-    private Date dados_horario_inicio;
-    @DatabaseField
-    private Date dados_horario_fim;
+    @DatabaseField(dataType = DataType.DATE)
+    private java.util.Date dados_horario_inicio;
+    @DatabaseField(dataType = DataType.DATE)
+    private java.util.Date dados_horario_fim;
     @DatabaseField
     private String dados_local;
     @DatabaseField
     private String foto;
     @DatabaseField
     private String descricao;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date created_at;
-    @DatabaseField
+    @DatabaseField(dataType = DataType.SQL_DATE)
     private Date updated_at;
 
     public int getId() {
@@ -36,14 +37,6 @@ public class Evento {
         this.id = id;
     }
 
-    public int getId_igreja() {
-        return id_igreja;
-    }
-
-    public void setId_igreja(int id_igreja) {
-        this.id_igreja = id_igreja;
-    }
-
     public String getNome() {
         return nome;
     }
@@ -52,19 +45,19 @@ public class Evento {
         this.nome = nome;
     }
 
-    public Date getDados_horario_inicio() {
+    public java.util.Date getDados_horario_inicio() {
         return dados_horario_inicio;
     }
 
-    public void setDados_horario_inicio(Date dados_horario_inicio) {
+    public void setDados_horario_inicio(java.util.Date dados_horario_inicio) {
         this.dados_horario_inicio = dados_horario_inicio;
     }
 
-    public Date getDados_horario_fim() {
+    public java.util.Date getDados_horario_fim() {
         return dados_horario_fim;
     }
 
-    public void setDados_horario_fim(Date dados_horario_fim) {
+    public void setDados_horario_fim(java.util.Date dados_horario_fim) {
         this.dados_horario_fim = dados_horario_fim;
     }
 
@@ -106,5 +99,13 @@ public class Evento {
 
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public Congregacao getCongregacao() {
+        return congregacao;
+    }
+
+    public void setCongregacao(Congregacao congregacao) {
+        this.congregacao = congregacao;
     }
 }

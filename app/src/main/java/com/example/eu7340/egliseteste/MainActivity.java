@@ -6,7 +6,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.NonNull;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.DB.DatabaseHelper;
@@ -15,6 +18,7 @@ import com.example.eu7340.egliseteste.Fragments.EgliseFragment;
 
 public class MainActivity extends AppCompatActivity {
     private TextView mTextMessage;
+    private static Fragment last_fragment;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void openFragment(Fragment fragment) {
+        last_fragment = fragment;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
         //transaction.addToBackStack(null);
@@ -52,30 +57,26 @@ public class MainActivity extends AppCompatActivity {
         mTextMessage = findViewById(R.id.message);
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        // CRIANDO CONEXAO
-        //try {
-            /*Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager
-                    .getConnection("jdbc:mysql://192.168.0.250:3306/DB_SGE_EGLISE?"
-                            + "user=paulo&password=123456");
-            Connection connect = DriverManager
-                    .getConnection("jdbc:mysql://192.168.0.105:3306/db_sge_eglise",
-                            "root", "usbw");*/
-            DatabaseHelper db_task = new DatabaseHelper(this);
-            db_task.execute();
+        DatabaseHelper db_task = new DatabaseHelper(this);
+        db_task.execute();
 
-            getSupportActionBar().setTitle("Plataforma Église");
+        getSupportActionBar().setTitle("Plataforma Église");
+        if(last_fragment == null) {
             Fragment egliseFragment = EgliseFragment.newInstance();
             openFragment(egliseFragment);
-        /*}catch(SQLException ex){
-            Toast.makeText(this, "Não foi possível conectar ao banco de dados!",
-                    Toast.LENGTH_LONG).show();
-            ex.printStackTrace();
-        }catch(ClassNotFoundException ex){
-            Toast.makeText(this, "Não foi possível resolver o classe do driver!",
-                    Toast.LENGTH_LONG).show();
-            ex.printStackTrace();
-        }*/
+        }else{
+            openFragment(last_fragment);
+        }
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        last_fragment = null;
+        finish();
+    }
 }

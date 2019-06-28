@@ -12,8 +12,8 @@ import java.sql.SQLException;
  * Created by EU7340 on 04/12/2018.
  */
 public class DatabaseHelper extends AsyncTask<Object, Object, Object> {
-    private static final String databaseName = "jdbc:mysql://192.168.0.250:3306/DB_SGE_EGLISE";
-    private static final String user = "paulo";
+    private static final String databaseName = "jdbc:mysql://192.168.0.112:3306/db_sge_eglise";
+    private static final String user = "eglise";
     private static final String password = "123456";
     private final Context context;
 
@@ -21,6 +21,7 @@ public class DatabaseHelper extends AsyncTask<Object, Object, Object> {
         this.context = context;
     }
 
+    //192.168.0.250
     //191.252.2.28
     // root Disc1plin@
     public Object doInBackground(Object... objects) {

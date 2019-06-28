@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 public class GaleriaListView extends LinearLayout {
 
@@ -41,8 +42,10 @@ public class GaleriaListView extends LinearLayout {
         TextView nome = view.findViewById(R.id.galeria_nome);
         nome.setText(galeria.getNome());
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
         TextView data = view.findViewById(R.id.galeria_data);
-        data.setText("Data: " + galeria.getData());
+        data.setText("Data: " + sdf.format(galeria.getData()));
 
         ImageButton bt = view.findViewById(R.id.galeria_bt);
         bt.setOnClickListener(new OnClickListener() {

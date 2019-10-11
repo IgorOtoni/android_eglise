@@ -6,30 +6,35 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.PublicacaoDAO;
-import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.Publicacao;
 import com.example.eu7340.egliseteste.R;
 import com.example.eu7340.egliseteste.Views.PublicacaoListView;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class PublicacoesFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
 
-    private ScrollView scrollView;
+    private LinearLayout publicacoes_area;
+
+    private TextView msg_loading;
+    private TextView msg_erro;
 
     private CarregaPublicacoes carregaPublicacoes_task;
 
@@ -44,13 +49,16 @@ public class PublicacoesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.fragment_publicacoes, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = Sessao.ultima_configuracao;
 
-        scrollView = view.findViewById(R.id.scrollView);
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
 
-        /*carregaPublicacoes_task = new CarregaPublicacoes(view);
-        carregaPublicacoes_task.execute(congregacao);*/
+        publicacoes_area = view.findViewById(R.id.publicacoes_area);
+
+        carregaPublicacoes_task = new CarregaPublicacoes(view);
+        carregaPublicacoes_task.execute();
 
         return view;
     }
@@ -60,7 +68,7 @@ public class PublicacoesFragment extends Fragment {
 
         if(carregaPublicacoes_task != null) carregaPublicacoes_task.cancel(true);
         carregaPublicacoes_task = new CarregaPublicacoes(getView());
-        carregaPublicacoes_task.execute(congregacao);
+        carregaPublicacoes_task.execute();
     }
 
     public void onDestroy(){
@@ -69,11 +77,15 @@ public class PublicacoesFragment extends Fragment {
         if(carregaPublicacoes_task != null) carregaPublicacoes_task.cancel(true);
     }
 
-    public static PublicacoesFragment newInstance() {
-        return new PublicacoesFragment();
+    public static PublicacoesFragment newInstance() { return new PublicacoesFragment(); }
+
+    private class CarregaPublicacoesRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
     }
 
-    private class CarregaPublicacoes extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class CarregaPublicacoes extends AsyncTask<Object, Object, CarregaPublicacoesRetorno> {
 
         private final View view;
 
@@ -81,33 +93,72 @@ public class PublicacoesFragment extends Fragment {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public CarregaPublicacoesRetorno doInBackground(Object... objects) {
+
+            String retorno = null;
+            CarregaPublicacoesRetorno retorno_ = new CarregaPublicacoesRetorno();
+            retorno_.erro = true;
+
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
 
-                PublicacaoDAO publicacaoDAO = new PublicacaoDAO(DB.connection);
-                QueryBuilder<Publicacao, Integer> _filtro = publicacaoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<Publicacao> preparedQuery = _filtro.prepare();
-                List<Publicacao> publicacoes = publicacaoDAO.query(preparedQuery);
-                for (int x = 0; x < publicacoes.size(); x++) {
-                    final Publicacao publicacao = publicacoes.get(x);
-                    PublicacaoListView publicacao_view = new PublicacaoListView(getContext(), null, publicacao);
-                    linearLayout.addView(publicacao_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                URL url = new URL(Servidor.ip + "/api/publicacoes/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return linearLayout;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            scrollView.removeAllViews();
-            scrollView.addView(linearLayout);
+        protected void onPostExecute(CarregaPublicacoesRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
+
+                publicacoes_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray publicacoes = new MyJSONArray(result_.getArray("publicacoes"));
+                    for (int x = 0; x < publicacoes.size(); x++) {
+                        final MyJSONObject publicacao = new MyJSONObject(publicacoes.getObjetc(x));
+                        PublicacaoListView publicacao_view = new PublicacaoListView(getContext(), null, publicacao);
+                        publicacoes_area.addView(publicacao_view);
+                    }
+                }
+            }
         }
     }
 }

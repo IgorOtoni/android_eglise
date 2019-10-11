@@ -5,11 +5,13 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.example.eu7340.egliseteste.Models.Noticia;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -20,6 +22,8 @@ import java.net.URL;
 
 public class NoticiaActivity extends AppCompatActivity {
 
+    private MyJSONObject noticia;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,52 +32,28 @@ public class NoticiaActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Notícia");
 
         Gson gson = new Gson();
-        Noticia noticia = gson.fromJson(getIntent().getStringExtra("noticia_detalhe"), Noticia.class);
+        noticia = gson.fromJson(getIntent().getStringExtra("noticia_detalhe"), MyJSONObject.class);
 
         TextView nome = findViewById(R.id.noticia_nome);
-        nome.setText(noticia.getNome());
+        nome.setText(noticia.getString("nome"));
 
         TextView descricao = findViewById(R.id.noticia_descricao);
-        descricao.setText(noticia.getDescricao());
+        descricao.setText(noticia.getString("descricao"));
 
         String txt_data = "";
-        if(noticia.getUpdated_at() != null && noticia.getUpdated_at().compareTo(noticia.getCreated_at()) == 0){
-            txt_data = "Atualizada em " + noticia.getUpdated_at();
+        if(!noticia.getString("updated_at").isEmpty() && !noticia.getString("updated_at").equals("null")){
+            txt_data = "Atualizada em " + noticia.getString("updated_at");
         }else{
-            txt_data = "Publicada em " + noticia.getCreated_at();
+            txt_data = "Publicada em " + noticia.getString("created_at");
         }
 
         TextView data = findViewById(R.id.noticia_data);
         data.setText(txt_data);
 
-        CarregaFotoNoticia carregaFotoNoticia_task = new CarregaFotoNoticia();
-        carregaFotoNoticia_task.execute(noticia);
-    }
+        byte[] decodedString = Base64.decode(noticia.getString("foto"), Base64.DEFAULT);
+        Bitmap foto_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-    private class CarregaFotoNoticia extends AsyncTask<Noticia, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(Noticia... params) {
-            try {
-                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getFoto() != null ? "noticias/" + params[0].getFoto() : "no-news.jpg"));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                return myBitmap;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            ImageView imageView = findViewById(R.id.noticia_imagem);
-            imageView.setImageBitmap(result);
-        }
+        ImageView imageView = findViewById(R.id.noticia_imagem);
+        imageView.setImageBitmap(foto_);
     }
 }

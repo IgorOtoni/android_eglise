@@ -109,8 +109,8 @@ public class FrequenciaActivity extends AppCompatActivity {
                         frequencia.setId(id_frequencia);
                     }
 
-                    FrequenciaListView frequencia_list = new FrequenciaListView(context, null, frequencia, membro_frequencia);
-                    frequencias_list.add(frequencia_list);
+                    /*FrequenciaListView frequencia_list = new FrequenciaListView(context, null, frequencia, membro_frequencia);
+                    frequencias_list.add(frequencia_list);*/
                 }
 
                 return frequencias_list;

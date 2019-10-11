@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
+import android.util.Base64;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import com.example.eu7340.egliseteste.Models.Noticia;
 import com.example.eu7340.egliseteste.NoticiaActivity;
 import com.example.eu7340.egliseteste.R;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -26,12 +29,10 @@ import java.text.SimpleDateFormat;
 
 public class NoticiaListView extends LinearLayout {
 
-    private Noticia noticia;
+    private MyJSONObject noticia;
     private View view;
 
-    private CarregaFotoNoticia carregaFotoNoticia_task;
-
-    public NoticiaListView(Context context, AttributeSet attrs, Noticia noticia) {
+    public NoticiaListView(Context context, AttributeSet attrs, MyJSONObject noticia) {
         super(context, attrs);
         this.noticia = noticia;
         init(context, attrs);
@@ -41,24 +42,27 @@ public class NoticiaListView extends LinearLayout {
         view = inflate(context, R.layout.noticia_list, this);
 
         TextView nome = view.findViewById(R.id.noticia_nome);
-        nome.setText(noticia.getNome());
+        nome.setText(noticia.getString("nome"));
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
         String txt_data = "";
-        if(noticia.getUpdated_at() != null && noticia.getUpdated_at().compareTo(noticia.getCreated_at()) == 0){
-            txt_data = "Atualizada em " + sdf.format(noticia.getUpdated_at());
+        if(!noticia.getString("updated_at").isEmpty() && !noticia.getString("updated_at").equals("null")){
+            txt_data = "Atualizada em " + noticia.getString("updated_at");
         }else{
-            txt_data = "Publicada em " + sdf.format(noticia.getCreated_at());
+            txt_data = "Publicada em " + noticia.getString("created_at");
         }
 
         TextView data = view.findViewById(R.id.noticia_data);
         data.setText(txt_data);
 
-        carregaFotoNoticia_task = new CarregaFotoNoticia();
-        carregaFotoNoticia_task.execute(noticia);
+        byte[] decodedString = Base64.decode(noticia.getString("foto"), Base64.DEFAULT);
+        Bitmap foto_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-        ImageButton bt = view.findViewById(R.id.noticia_bt);
+        ImageView imageView = view.findViewById(R.id.noticia_imagem);
+        imageView.setImageBitmap(foto_);
+
+        Button bt = view.findViewById(R.id.noticia_bt);
         bt.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,7 +71,7 @@ public class NoticiaListView extends LinearLayout {
         });
     }
 
-    public void detalhes_noticia(Noticia noticia){
+    public void detalhes_noticia(MyJSONObject noticia){
         Gson gson = new Gson();
         String noticia_json = gson.toJson(noticia);
 
@@ -76,33 +80,6 @@ public class NoticiaListView extends LinearLayout {
         intent.putExtra("noticia_detalhe", noticia_json);
 
         getContext().startActivity(intent);
-    }
-
-    private class CarregaFotoNoticia extends AsyncTask<Noticia, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(Noticia... params) {
-            try {
-                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getFoto() != null ? "noticias/" + params[0].getFoto() : "no-news.jpg"));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                return myBitmap;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            ImageView imageView = view.findViewById(R.id.noticia_imagem);
-            imageView.setImageBitmap(result);
-        }
     }
 
 }

@@ -15,10 +15,13 @@
             android:id="@+id/galeria_nome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="Congregações"
-            android:gravity="center" />
+            android:gravity="center"
+            android:layout_margin="5dp" />
 
         <ScrollView
             android:layout_width="match_parent"

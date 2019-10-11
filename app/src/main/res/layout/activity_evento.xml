@@ -15,10 +15,13 @@
             android:id="@+id/evento_nome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
-            android:text="Congregações"
-            android:gravity="center" />
+            android:text="Evento"
+            android:gravity="center"
+            android:layout_margin="5dp" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -33,40 +36,45 @@
                     android:id="@+id/evento_imagem"
                     android:layout_width="250dp"
                     android:layout_height="250dp"
+                    android:layout_margin="10dp"
                     android:layout_gravity="center"/>
 
                 <TextView
                     android:id="@+id/evento_horario_inicio"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:layout_gravity="center"
+                    android:text="Início"
                     android:textSize="20dp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:layout_gravity="center"/>
 
                 <TextView
                     android:id="@+id/evento_horario_fim"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_gravity="center"
+                    android:text="Fim"
                     android:textSize="20dp"
                     android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/evento_local"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_gravity="center"
+                    android:text="Local"
                     android:textSize="20dp"
                     android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/evento_descricao"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
+                    android:text="Descrição"
                     android:layout_gravity="center"/>
 
             </LinearLayout>

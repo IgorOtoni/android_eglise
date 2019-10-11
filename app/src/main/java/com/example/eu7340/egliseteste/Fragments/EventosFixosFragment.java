@@ -7,26 +7,34 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.EventoFixoDAO;
 import com.example.eu7340.egliseteste.Views.EventoFixoListView;
-import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.EventoFixo;
 import com.example.eu7340.egliseteste.R;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class EventosFixosFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
 
-    private ScrollView scrollView;
+    private LinearLayout eventosfixos_area;
+
+    private TextView msg_loading;
+    private TextView msg_erro;
 
     private CarregaEventosFixos carregaEventosFixos_task;
 
@@ -41,13 +49,16 @@ public class EventosFixosFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_eventos_fixos, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = Sessao.ultima_configuracao;
 
-        scrollView = view.findViewById(R.id.scrollView);
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
 
-        /*carregaEventosFixos_task = new CarregaEventosFixos(view);
-        carregaEventosFixos_task.execute(congregacao);*/
+        eventosfixos_area = view.findViewById(R.id.eventosfixos_area);
+
+        carregaEventosFixos_task = new CarregaEventosFixos(view);
+        carregaEventosFixos_task.execute();
 
         return view;
     }
@@ -55,22 +66,28 @@ public class EventosFixosFragment extends Fragment {
     public void onResume(){
         super.onResume();
 
-        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(true);
+        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(false);
         carregaEventosFixos_task = new CarregaEventosFixos(getView());
-        carregaEventosFixos_task.execute(congregacao);
+        carregaEventosFixos_task.execute();
     }
 
     public void onDestroy(){
         super.onDestroy();
 
-        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(true);
+        if(carregaEventosFixos_task != null) carregaEventosFixos_task.cancel(false);
     }
 
     public static EventosFixosFragment newInstance() {
         return new EventosFixosFragment();
     }
 
-    private class CarregaEventosFixos extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class CarregaEventosFixosRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
+    private class CarregaEventosFixos extends AsyncTask<Object, Object, CarregaEventosFixosRetorno> {
 
         private final View view;
 
@@ -78,33 +95,72 @@ public class EventosFixosFragment extends Fragment {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public CarregaEventosFixosRetorno doInBackground(Object... objects) {
+
+            String retorno = null;
+            CarregaEventosFixosRetorno retorno_ = new CarregaEventosFixosRetorno();
+            retorno_.erro = true;
+
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
 
-                EventoFixoDAO eventofixoDAO = new EventoFixoDAO(DB.connection);
-                QueryBuilder<EventoFixo, Integer> _filtro = eventofixoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<EventoFixo> preparedQuery = _filtro.prepare();
-                List<EventoFixo> publicacoes = eventofixoDAO.query(preparedQuery);
-                for (int x = 0; x < publicacoes.size(); x++) {
-                    final EventoFixo eventofixo = publicacoes.get(x);
-                    EventoFixoListView eventofixo_view = new EventoFixoListView(getContext(), null, eventofixo);
-                    linearLayout.addView(eventofixo_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                URL url = new URL(Servidor.ip + "/api/eventosfixos/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return linearLayout;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            scrollView.removeAllViews();
-            scrollView.addView(linearLayout);
+        protected void onPostExecute(CarregaEventosFixosRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
+
+                eventosfixos_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray eventosfixos = new MyJSONArray(result_.getArray("eventosfixos"));
+                    for (int x = 0; x < eventosfixos.size(); x++) {
+                        final MyJSONObject eventofixo = new MyJSONObject(eventosfixos.getObjetc(x));
+                        EventoFixoListView eventofixo_view = new EventoFixoListView(getContext(), null, eventofixo);
+                        eventosfixos_area.addView(eventofixo_view);
+                    }
+                }
+            }
         }
     }
 }

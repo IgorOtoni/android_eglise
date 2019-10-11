@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.Models.Publicacao;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -22,6 +23,8 @@ import java.net.URL;
 
 public class PublicacaoActivity extends AppCompatActivity {
 
+    private MyJSONObject publicacao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,10 +33,10 @@ public class PublicacaoActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Publicação");
 
         Gson gson = new Gson();
-        Publicacao publicacao = gson.fromJson(getIntent().getStringExtra("publicacao_detalhe"), Publicacao.class);
+        publicacao = gson.fromJson(getIntent().getStringExtra("publicacao_detalhe"), MyJSONObject.class);
 
         TextView nome = findViewById(R.id.publicacao_nome);
-        nome.setText(publicacao.getNome());
+        nome.setText(publicacao.getString("nome"));
 
         /*String txt_data = "";
         if(publicacao.getUpdated_at() != null && publicacao.getUpdated_at().compareTo(publicacao.getCreated_at()) == 0){
@@ -54,7 +57,7 @@ public class PublicacaoActivity extends AppCompatActivity {
         });
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        String html = publicacao.getHtml();
+        String html = publicacao.getString("html");
         String css = "<style>body {width: 300px !important;} h1, h2, h3, h4, h5, h6, p, ul, ol, li, img {width: 100% !important;}</style>";
         /*html = html.replaceAll("\\t","");
         html = html.replaceAll("\\r","");

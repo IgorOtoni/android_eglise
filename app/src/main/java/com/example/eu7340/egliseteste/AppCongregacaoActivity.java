@@ -9,6 +9,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Base64;
+import android.view.Menu;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,12 +23,10 @@ import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.eu7340.egliseteste.DB.ConfiguracaoDAO;
 import com.example.eu7340.egliseteste.DB.DB;
 import com.example.eu7340.egliseteste.DB.EventoDAO;
 import com.example.eu7340.egliseteste.DB.EventoFixoDAO;
 import com.example.eu7340.egliseteste.DB.GaleriaDAO;
-import com.example.eu7340.egliseteste.DB.MenuDAO;
 import com.example.eu7340.egliseteste.DB.NoticiaDAO;
 import com.example.eu7340.egliseteste.DB.PublicacaoDAO;
 import com.example.eu7340.egliseteste.DB.SermaoDAO;
@@ -36,51 +36,39 @@ import com.example.eu7340.egliseteste.Fragments.GaleriasFragment;
 import com.example.eu7340.egliseteste.Fragments.HomeFragment;
 import com.example.eu7340.egliseteste.Fragments.LoginFragment;
 import com.example.eu7340.egliseteste.Fragments.NoticiasFragment;
+import com.example.eu7340.egliseteste.Fragments.ProdutosFragment;
 import com.example.eu7340.egliseteste.Fragments.PublicacoesFragment;
 import com.example.eu7340.egliseteste.Fragments.SermoesFragment;
-import com.example.eu7340.egliseteste.Models.Configuracao;
-import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.example.eu7340.egliseteste.Models.Evento;
 import com.example.eu7340.egliseteste.Models.EventoFixo;
 import com.example.eu7340.egliseteste.Models.Galeria;
-import com.example.eu7340.egliseteste.Models.Menu;
 import com.example.eu7340.egliseteste.Models.Noticia;
 import com.example.eu7340.egliseteste.Models.Publicacao;
 import com.example.eu7340.egliseteste.Models.Sermao;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.example.eu7340.egliseteste.utils.Sessao;
 import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.SQLException;
-import java.util.List;
 
 public class AppCongregacaoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static Fragment last_fragment;
 
-    private Congregacao congregacao;
-    private Configuracao configuracao;
+    private MyJSONObject congregacao;
+    private MyJSONObject configuracao;
+    private MyJSONArray menus;
     private View headerView;
     private android.view.Menu menu;
-    private List<Menu> menus;
     private android.view.Menu sub_menu;
     private ImageView logo;
-
-    private CarregaLogoCongregacao carregaLogoCongregacao_task;
-    private CarregaLinksCongregacao carregaLinksCongregacao_task;
-    private CarregaMenusCongregacao carregaMenusCongregacao_task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app_congregacao);
+        setContentView(R.layout.activity_app_site);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -91,51 +79,62 @@ public class AppCongregacaoActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getIntent().getStringExtra("congregacao_app"), Congregacao.class);
-        this.configuracao = gson.fromJson(getIntent().getStringExtra("configuracao_app"), Configuracao.class);
-
         if(congregacao == null || configuracao == null){
             congregacao = Sessao.ultima_congregacao;
             configuracao = Sessao.ultima_configuracao;
-
-            String congregacao_json = gson.toJson(congregacao);
-            String configuracao_json = gson.toJson(configuracao);
-
-            Intent intent = new Intent(this, AppCongregacaoActivity.class);
-
-            intent.putExtra("congregacao_app", congregacao_json);
-            intent.putExtra("configuracao_app", configuracao_json);
-
-            this.setIntent(intent);
+            menus = Sessao.ultimos_menus;
         }else{
             Sessao.ultima_congregacao = congregacao;
             Sessao.ultima_configuracao = configuracao;
+            Sessao.ultimos_menus = menus;
         }
 
-        getSupportActionBar().setTitle(this.congregacao.getNome());
+        getSupportActionBar().setTitle(this.congregacao.getString("nome"));
 
         headerView = navigationView.getHeaderView(0);
         menu = navigationView.getMenu();
         sub_menu = ((MenuItem)menu.findItem(R.id.social_menu)).getSubMenu();
         logo = headerView.findViewById(R.id.congregacao_logo);
 
-        getSupportActionBar().setTitle(congregacao.getNome());
+        getSupportActionBar().setTitle(congregacao.getString("nome"));
 
-        carregaLogoCongregacao_task = new CarregaLogoCongregacao();
-        carregaLogoCongregacao_task.execute(congregacao);
+        byte[] decodedString = Base64.decode(congregacao.getString("logo"), Base64.DEFAULT);
+        Bitmap logo_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+        logo.setImageBitmap(logo_);
 
         TextView congregacao_nome = headerView.findViewById(R.id.congregacao_nome);
-        congregacao_nome.setText(congregacao.getNome());
+        congregacao_nome.setText(congregacao.getString("nome"));
         TextView congregacao_email = headerView.findViewById(R.id.congregacao_email);
-        if(congregacao.getEmail() == null) congregacao_email.setVisibility(View.GONE);
-        else congregacao_email.setText(congregacao.getEmail());
+        if(congregacao.getString("email") == null) congregacao_email.setVisibility(View.GONE);
+        else congregacao_email.setText(congregacao.getString("email"));
 
-        carregaLinksCongregacao_task = new CarregaLinksCongregacao();
-        carregaLinksCongregacao_task.execute(congregacao);
+        MenuItem facebook_menu = sub_menu.findItem(R.id.facebook_link);
+        MenuItem twitter_menu = sub_menu.findItem(R.id.twitter_link);
+        MenuItem youtube_menu = sub_menu.findItem(R.id.youtube_link);
+        if(configuracao.getString("facebook") == null || configuracao.getString("facebook").equals("null")){
+            facebook_menu.setVisible(false);
+        }else{
+            Intent facebook_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(configuracao.getString("facebook")));
+            facebook_menu.setIntent(facebook_intent);
+        }
+        if(configuracao.getString("twitter") == null || configuracao.getString("facebook").equals("null")){
+            twitter_menu.setVisible(false);
+        }else{
+            Intent twitter_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(configuracao.getString("twitter")));
+            twitter_menu.setIntent(twitter_intent);
+        }
+        if(configuracao.getString("youtube") == null || configuracao.getString("facebook").equals("null")){
+            youtube_menu.setVisible(false);
+        }else{
+            Intent youtube_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(configuracao.getString("youtube")));
+            youtube_menu.setIntent(youtube_intent);
+        }
 
-        carregaMenusCongregacao_task = new CarregaMenusCongregacao();
-        carregaMenusCongregacao_task.execute(congregacao);
+        for(int qtd_menus = 0; qtd_menus < menus.size(); qtd_menus++){
+            MyJSONObject menu_ = new MyJSONObject(menus.getObjetc(qtd_menus));
+            menu.add(0, menu_.getInt("id"), menu_.getInt("ordem"), menu_.getString("nome"));
+        }
 
         if(last_fragment == null) openFragment(HomeFragment.newInstance());
         else openFragment(last_fragment);
@@ -143,93 +142,6 @@ public class AppCongregacaoActivity extends AppCompatActivity
 
     public void onDestroy(){
         super.onDestroy();
-
-        if(carregaLogoCongregacao_task != null) carregaLogoCongregacao_task.cancel(true);
-        if(carregaLinksCongregacao_task != null) carregaLinksCongregacao_task.cancel(true);
-        if(carregaMenusCongregacao_task != null) carregaMenusCongregacao_task.cancel(true);
-    }
-
-    private class CarregaMenusCongregacao extends AsyncTask<Congregacao, Void, List<Menu>> {
-        @Override
-        protected List<Menu> doInBackground(Congregacao... params) {
-            try {
-                ConfiguracaoDAO configuracaoDAO = new ConfiguracaoDAO(DB.connection);
-                QueryBuilder<Configuracao, Integer> _filtro = configuracaoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", params[0].getId());
-                PreparedQuery<Configuracao> preparedQuery = _filtro.prepare();
-                List<Configuracao> _resultado = configuracaoDAO.query(preparedQuery);
-
-                MenuDAO menuDAO = new MenuDAO(DB.connection);
-                QueryBuilder<Menu, Integer> __filtro = menuDAO.queryBuilder();
-                __filtro.where().like("id_configuracao", _resultado.get(0).getId());
-                __filtro.orderBy("ordem", true);
-                PreparedQuery<Menu> _preparedQuery = __filtro.prepare();
-                List<Menu> __resultado = menuDAO.query(_preparedQuery);
-
-                return __resultado;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Menu> todos_menus) {
-            //menu.clear();
-            menus = todos_menus;
-
-            for(int qtd_menus = 0; qtd_menus < todos_menus.size(); qtd_menus++){
-                menu.add(0, menus.get(qtd_menus).getId(), menus.get(qtd_menus).getOrdem(), menus.get(qtd_menus).getNome());
-            }
-        }
-    }
-
-    private class CarregaLinksCongregacao extends AsyncTask<Congregacao, Void, String[]> {
-        @Override
-        protected String[] doInBackground(Congregacao... params) {
-            try {
-                ConfiguracaoDAO configuracaoDAO = new ConfiguracaoDAO(DB.connection);
-                QueryBuilder<Configuracao, Integer> _filtro = configuracaoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", params[0].getId());
-                PreparedQuery<Configuracao> preparedQuery = _filtro.prepare();
-                List<Configuracao> _resultado = configuracaoDAO.query(preparedQuery);
-                String[] links = new String[3];
-                links[0] = _resultado.get(0).getFacebook();
-                links[1] = _resultado.get(0).getTwitter();
-                links[2] = _resultado.get(0).getYoutube();
-                return links;
-            }catch (SQLException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] links) {
-            MenuItem facebook_menu = sub_menu.findItem(R.id.facebook_link);
-            MenuItem twitter_menu = sub_menu.findItem(R.id.twitter_link);
-            MenuItem youtube_menu = sub_menu.findItem(R.id.youtube_link);
-            if(links[0] == null){
-                facebook_menu.setVisible(false);
-            }else{
-                Intent facebook_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(links[0]));
-                facebook_menu.setIntent(facebook_intent);
-            }
-            if(links[1] == null){
-                twitter_menu.setVisible(false);
-            }else{
-                Intent twitter_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(links[1]));
-                twitter_menu.setIntent(twitter_intent);
-            }
-            if(links[2] == null){
-                youtube_menu.setVisible(false);
-            }else{
-                Intent youtube_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(links[2]));
-                youtube_menu.setIntent(youtube_intent);
-            }
-        }
     }
 
     /*public boolean onPrepareOptionsMenu(Menu menu)
@@ -237,37 +149,11 @@ public class AppCongregacaoActivity extends AppCompatActivity
         MenuItem facebook_menu = menu.findItem(R.id.facebook_link);
         facebook_menu.setVisible(facebook_menu.getIntent() != null);
         MenuItem twitter_menu = menu.findItem(R.id.twitter_link);
-        facebook_menu.setVisible(facebook_menu.getIntent() != null);
+        twitter_menu.setVisible(facebook_menu.getIntent() != null);
         MenuItem youtube_menu = menu.findItem(R.id.youtube_link);
-        facebook_menu.setVisible(facebook_menu.getIntent() != null);
+        youtube_menu.setVisible(facebook_menu.getIntent() != null);
         return true;
     }*/
-
-    private class CarregaLogoCongregacao extends AsyncTask<Congregacao, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(Congregacao... params) {
-            try {
-                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getLogo() != null ? "igrejas/" + params[0].getLogo() : "no-logo.jpg"));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                return myBitmap;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            logo.setImageBitmap(result);
-        }
-    }
 
     @Override
     public void onBackPressed() {
@@ -284,7 +170,7 @@ public class AppCongregacaoActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.app_congregacao, menu);
+        getMenuInflater().inflate(R.menu.app_site, menu);
 
         return true;
     }
@@ -312,12 +198,13 @@ public class AppCongregacaoActivity extends AppCompatActivity
         int id = item.getItemId();
 
         for(int cont = 0; cont < menus.size(); cont++){
-            if(id == menus.get(cont).getId()){
-                MenuItem menu_item = menu.findItem(menus.get(cont).getId());
-                if(menus.get(cont).getLink().contains("http://") || menus.get(cont).getLink().contains("https://")){
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(menus.get(cont).getLink())));
-                }else if(menus.get(cont).getLink().contains("modulo")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+            MyJSONObject menu_ = new MyJSONObject(menus.getObjetc(cont));
+            if(id == menu_.getInt("id")){
+                MenuItem menu_item = menu.findItem(menu_.getInt("id"));
+                if(menu_.getString("link").contains("http://") || menu_.getString("link").contains("https://")){
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(menu_.getString("link"))));
+                }else if(menu_.getString("link").contains("modulo")) {
+                    String[] split = menu_.getString("link").split("-");
                     switch(split[1]){
                         case "apresentacao":
                             openFragment(HomeFragment.newInstance());
@@ -340,37 +227,40 @@ public class AppCongregacaoActivity extends AppCompatActivity
                         case "galerias":
                             openFragment(GaleriasFragment.newInstance());
                             break;
+                        case "produtos":
+                            openFragment(ProdutosFragment.newInstance());
+                            break;
                         case "login":
                             openFragment(LoginFragment.newInstance());
                             break;
                     }
-                }else if(menus.get(cont).getLink().contains("evento")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("evento")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_evento = Integer.parseInt(split[1]);
                     AbrirEventoActivity abrirEventoActivity = new AbrirEventoActivity(this);
                     abrirEventoActivity.execute(id_evento);
-                }else if(menus.get(cont).getLink().contains("noticia")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("noticia")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_noticia = Integer.parseInt(split[1]);
                     AbrirNoticiaActivity abrirNoticiaActivity = new AbrirNoticiaActivity(this);
                     abrirNoticiaActivity.execute(id_noticia);
-                }else if(menus.get(cont).getLink().contains("eventofixo")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("eventofixo")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_eventofixo = Integer.parseInt(split[1]);
                     AbrirEventoFixoActivity abrirEventoFixoActivity = new AbrirEventoFixoActivity(this);
                     abrirEventoFixoActivity.execute(id_eventofixo);
-                }else if(menus.get(cont).getLink().contains("publicacao")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("publicacao")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_publicacao = Integer.parseInt(split[1]);
                     AbrirPublicacaoActivity abrirPublicacaoActivity = new AbrirPublicacaoActivity(this);
                     abrirPublicacaoActivity.execute(id_publicacao);
-                }else if(menus.get(cont).getLink().contains("sermao")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("sermao")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_sermao = Integer.parseInt(split[1]);
                     AbrirSermaoActivity abrirSermaoActivity = new AbrirSermaoActivity(this);
                     abrirSermaoActivity.execute(id_sermao);
-                }else if(menus.get(cont).getLink().contains("galeria")) {
-                    String[] split = menus.get(cont).getLink().split("-");
+                }else if(menu_.getString("link").contains("galeria")) {
+                    String[] split = menu_.getString("link").split("-");
                     int id_galeria = Integer.parseInt(split[1]);
                     AbrirGaleriaActivity abrirGaleriaActivity = new AbrirGaleriaActivity(this);
                     abrirGaleriaActivity.execute(id_galeria);

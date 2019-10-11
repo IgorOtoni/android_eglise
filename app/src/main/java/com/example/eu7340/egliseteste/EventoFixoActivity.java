@@ -5,10 +5,12 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.Models.EventoFixo;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -19,6 +21,8 @@ import java.net.URL;
 
 public class EventoFixoActivity extends AppCompatActivity {
 
+    private MyJSONObject eventofixo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,45 +31,21 @@ public class EventoFixoActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Evento fixo");
 
         Gson gson = new Gson();
-        EventoFixo eventofixo = gson.fromJson(getIntent().getStringExtra("eventofixo_detalhe"), EventoFixo.class);
+        eventofixo = gson.fromJson(getIntent().getStringExtra("eventofixo_detalhe"), MyJSONObject.class);
 
         TextView nome = findViewById(R.id.eventofixo_nome);
-        nome.setText(eventofixo.getNome());
+        nome.setText(eventofixo.getString("nome"));
 
         TextView dados = findViewById(R.id.eventofixo_dados);
-        dados.setText(eventofixo.getDados_horario_local());
+        dados.setText(eventofixo.getString("dados_horario_local"));
 
         TextView descricao = findViewById(R.id.eventofixo_descricao);
-        descricao.setText(eventofixo.getDescricao());
+        descricao.setText(eventofixo.getString("descricao"));
 
-        CarregaFotoEventoFixo carregaFotoEventoFixo_task = new CarregaFotoEventoFixo();
-        carregaFotoEventoFixo_task.execute(eventofixo);
-    }
+        byte[] decodedString = Base64.decode(eventofixo.getString("foto"), Base64.DEFAULT);
+        Bitmap foto_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-    private class CarregaFotoEventoFixo extends AsyncTask<EventoFixo, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(EventoFixo... params) {
-            try {
-                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getFoto() != null ? "eventos/" + params[0].getFoto() : "no-news.jpg"));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                return myBitmap;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            ImageView imageView = findViewById(R.id.eventofixo_imagem);
-            imageView.setImageBitmap(result);
-        }
+        ImageView imageView = findViewById(R.id.eventofixo_imagem);
+        imageView.setImageBitmap(foto_);
     }
 }

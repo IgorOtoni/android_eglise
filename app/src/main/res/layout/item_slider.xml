@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:gravity="top"
     android:id="@+id/linearLayout"
     android:orientation="vertical">
 
@@ -11,8 +11,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
+        android:layout_gravity="center"
+        android:background="@drawable/margem_"
+        android:text="Título"
         android:textStyle="bold"
-        android:textSize="25dp" />
+        android:textSize="20dp"
+        android:layout_margin="5dp" />
 
     <!--<TextView
         android:id="@+id/banner_descricao"

@@ -9,16 +9,20 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginBottom="10dp">
 
         <TextView
             android:id="@+id/sermao_nome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
-            android:text="Congregações"
-            android:gravity="center" />
+            android:text="Mídia"
+            android:gravity="center"
+            android:layout_margin="5dp" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -31,26 +35,30 @@
 
                 <WebView
                     android:id="@+id/sermao_video"
-                    android:layout_width="300dp"
+                    android:layout_width="match_parent"
                     android:layout_height="300dp"
+                    android:layout_margin="10dp"
                     android:layout_gravity="center"
                     />
 
                 <TextView
-                    android:id="@+id/sermao_descricao"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:textSize="20dp"
-                    android:layout_gravity="center"/>
-
-                <TextView
                     android:id="@+id/sermao_data"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_gravity="center"
-                    android:textStyle="bold"/>
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    android:text="Data"/>
+
+                <TextView
+                    android:id="@+id/sermao_descricao"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:textSize="20dp"
+                    android:layout_gravity="center"
+                    android:text="Descrição"/>
 
                 <Button
                     android:id="@+id/sermao_bt"
@@ -58,8 +66,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="Assistir"
-                    android:textColor="@color/colorBtWhite"
-                    android:background="@drawable/bt_color" />
+                    android:textColor="#FFF"
+                    android:background="@color/colorPrimary" />
 
             </LinearLayout>
 

@@ -124,7 +124,7 @@ public class ComunidadeCRUDHomeFragment extends Fragment {
     public void onDestroyView(){
         super.onDestroyView();
 
-        carregaMenusCongregacao_task.cancel(true);
+        carregaMenusCongregacao_task.cancel(false);
     }
 
     public static ComunidadeCRUDHomeFragment newInstance() {
@@ -167,7 +167,7 @@ public class ComunidadeCRUDHomeFragment extends Fragment {
 
                 Map<String, Object> campos_ = new HashMap<>();
                 campos_.put("id_comunidade", params[0].getId());
-                campos_.put("id_membro", Sessao.ultimo_membro.getId());
+                //campos_.put("id_membro", Sessao.ultimo_membro.getId());
                 List<MembroComunidade> membroComunidade = membroComunidadeDAO.queryForFieldValues(campos_);
                 if(membroComunidade != null && membroComunidade.size() == 1) dados.lider = membroComunidade.get(0).isLider();
                 else dados.lider = false;

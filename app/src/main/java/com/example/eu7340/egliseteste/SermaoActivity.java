@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.Models.Sermao;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.net.URL;
 
 public class SermaoActivity extends AppCompatActivity {
 
-    private Sermao sermao;
+    private MyJSONObject sermao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,23 +37,23 @@ public class SermaoActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Sermão");
 
         Gson gson = new Gson();
-        sermao = gson.fromJson(getIntent().getStringExtra("sermao_detalhe"), Sermao.class);
+        sermao = gson.fromJson(getIntent().getStringExtra("sermao_detalhe"), MyJSONObject.class);
 
         TextView nome = findViewById(R.id.sermao_nome);
-        nome.setText(sermao.getNome());
+        nome.setText(sermao.getString("nome"));
 
         String txt_data = "";
-        if(sermao.getUpdated_at() != null && sermao.getUpdated_at().compareTo(sermao.getCreated_at()) == 0){
-            txt_data = "Atualizado em " + sermao.getUpdated_at();
+        if(!sermao.getString("updated_at").isEmpty() && !sermao.getString("updated_at").equals("null")){
+            txt_data = "Atualizado em " + sermao.getString("updated_at");
         }else{
-            txt_data = "Publicado em " + sermao.getCreated_at();
+            txt_data = "Publicado em " + sermao.getString("created_at");
         }
 
         TextView data = findViewById(R.id.sermao_data);
         data.setText(txt_data);
 
         TextView descricao = findViewById(R.id.sermao_descricao);
-        descricao.setText(sermao.getDescricao());
+        descricao.setText(sermao.getString("descricao"));
 
         WebView webView = (WebView) findViewById(R.id.sermao_video);
         webView.setWebViewClient(new WebViewClient() {
@@ -63,13 +64,13 @@ public class SermaoActivity extends AppCompatActivity {
         });
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webView.loadUrl(sermao.getLink());
+        webView.loadUrl(sermao.getString("link"));
 
         Button bt = findViewById(R.id.sermao_bt);
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sermao.getLink())));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sermao.getString("link"))));
             }
         });
     }

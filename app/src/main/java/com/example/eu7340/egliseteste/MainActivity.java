@@ -6,14 +6,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.eu7340.egliseteste.DB.DatabaseHelper;
-import com.example.eu7340.egliseteste.Fragments.CongregacoesFragment;
+import com.example.eu7340.egliseteste.Fragments.SitesFragment;
 import com.example.eu7340.egliseteste.Fragments.EgliseFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 case R.id.mn_congregacoes:
                     //getSupportActionBar().setTitle("Congregações");
-                    Fragment congregacoesFragment = CongregacoesFragment.newInstance();
+                    Fragment congregacoesFragment = SitesFragment.newInstance();
                     openFragment(congregacoesFragment);
                     return true;
             }
@@ -60,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper db_task = new DatabaseHelper(this);
         db_task.execute();
 
-        getSupportActionBar().setTitle("Plataforma Église");
+        getSupportActionBar().setTitle("Plataforma Sites");
         if(last_fragment == null) {
             Fragment egliseFragment = EgliseFragment.newInstance();
             openFragment(egliseFragment);

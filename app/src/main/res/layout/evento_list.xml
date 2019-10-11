@@ -14,12 +14,11 @@
             android:id="@+id/evento_nome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
+            android:text="Nome"
             android:textSize="15dp"
             android:textStyle="bold"
             android:layout_marginTop="5dp"
             android:layout_marginLeft="15dp"
-            tools:text="Nome"
             android:layout_gravity="center" />
 
     </LinearLayout>
@@ -27,38 +26,37 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
 
         <LinearLayout
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="15dp">
+            android:layout_margin="15dp">
 
             <TextView
                 android:id="@+id/evento_data_inicio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_margin="5dp"
                 android:text="TextView"
                 android:textSize="15dp"
-                tools:text="Data"
                 android:layout_gravity="left" />
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/evento_data_fim"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:textSize="15dp"
-                android:text="Data"
-                android:layout_gravity="left" />
+                android:layout_gravity="left" />-->
 
             <TextView
                 android:id="@+id/evento_local"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_margin="5dp"
                 android:textSize="15dp"
                 android:text="Data"
                 android:layout_gravity="left" />
@@ -76,21 +74,40 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="15dp"/>
+            android:layout_margin="15dp"/>
 
-        <ImageButton
+        <!--<ImageButton
             android:id="@+id/evento_bt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="0dp"
-            android:src="@drawable/pesquisar"
+            android:src="@drawable/eye3_48"
+            android:background="@color/colorAccent"
             android:layout_gravity="center"
-            android:bottomRightRadius="10dp"
-            android:bottomLeftRadius="10dp"
-            android:topLeftRadius="10dp"
-            android:topRightRadius="10dp"
-            android:layout_margin="15dp" />
+            android:layout_margin="15dp" />-->
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/evento_bt"
+        android:text="Detalhes"
+        android:textColor="#FFF"
+        android:background="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/pesquisar"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:bottomRightRadius="10dp"
+        android:bottomLeftRadius="10dp"
+        android:topLeftRadius="10dp"
+        android:topRightRadius="10dp"
+        android:background="@android:color/darker_gray"/>
 
 </LinearLayout>

@@ -1,53 +1,48 @@
 package com.example.eu7340.egliseteste.Fragments;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.BannerDAO;
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.FuncaoDAO;
-import com.example.eu7340.egliseteste.DB.MembroDAO;
-import com.example.eu7340.egliseteste.Models.Banner;
-import com.example.eu7340.egliseteste.Models.Configuracao;
-import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.Funcao;
-import com.example.eu7340.egliseteste.Models.Membro;
 import com.example.eu7340.egliseteste.R;
 import com.example.eu7340.egliseteste.Views.ApresentacaoListView;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 import com.example.eu7340.egliseteste.utils.SliderAdapter;
 import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class HomeFragment extends Fragment {
 
-    private Congregacao congregacao;
-    private Configuracao configuracao;
+    private MyJSONObject congregacao;
+    private MyJSONObject configuracao;
     private Timer timer;
 
     private ViewPager viewPager;
@@ -59,6 +54,7 @@ public class HomeFragment extends Fragment {
 
     private LinearLayout map;
     private LinearLayout linearLayout;
+    private LinearLayout membros_area;
 
     private CarregaBanners carregaBanners_task;
     private CarregaMembrosImportantes carregaMembrosImportantes_task;
@@ -75,8 +71,8 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.slider, container, false);
 
         Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
-        this.configuracao = gson.fromJson(getActivity().getIntent().getStringExtra("configuracao_app"), Configuracao.class);
+        this.congregacao = Sessao.ultima_congregacao;
+        this.configuracao = Sessao.ultima_configuracao;
 
         viewPager = view.findViewById(R.id.viewPager);
         indicator = view.findViewById(R.id.indicator);
@@ -85,34 +81,36 @@ public class HomeFragment extends Fragment {
         carregaBanners_task.execute(congregacao);
 
         TextView apresentacao = view.findViewById(R.id.congregacao_apresentacao);
-        if(configuracao.getTexto_apresentativo() != null) {
-            apresentacao.setText(configuracao.getTexto_apresentativo());
+        if(configuracao.getString("texto_apresentativo") != null) {
+            apresentacao.setText(configuracao.getString("texto_apresentativo"));
         }else{
             apresentacao.setVisibility(View.GONE);
         }
 
         TextView telefone = view.findViewById(R.id.congregacao_telefone);
-        if(congregacao.getTelefone() != null) {
-            telefone.setText(congregacao.getTelefone());
+        if(congregacao.getString("telefone") != null) {
+            telefone.setText(congregacao.getString("telefone"));
         }else{
             telefone.setVisibility(View.GONE);
         }
 
         TextView email = view.findViewById(R.id.congregacao_email);
-        if(congregacao.getEmail() != null) {
-            email.setText(congregacao.getEmail());
+        if(congregacao.getString("email") != null) {
+            email.setText(congregacao.getString("email"));
         }else{
             email.setVisibility(View.GONE);
         }
 
         linearLayout = view.findViewById(R.id.main_linear_layout);
 
-        carregaMembrosImportantes_task = new CarregaMembrosImportantes();
-        carregaMembrosImportantes_task.execute(congregacao);
+        membros_area = view.findViewById(R.id.membros_area);
+
+        carregaMembrosImportantes_task = new CarregaMembrosImportantes(view);
+        carregaMembrosImportantes_task.execute();
 
         map = view.findViewById(R.id.map_container);
 
-        if(congregacao.getCep() != null) openFragment(MapCongregacaoFragment.newInstance());
+        if(congregacao.getString("cep") != null) openFragment(MapSiteFragment.newInstance());
         else map.setVisibility(View.GONE);
 
         return view;
@@ -121,8 +119,8 @@ public class HomeFragment extends Fragment {
     public void onDestroy(){
         super.onDestroy();
 
-        if(carregaBanners_task != null) carregaBanners_task.cancel(true);
-        if(carregaMembrosImportantes_task != null) carregaMembrosImportantes_task.cancel(true);
+        if(carregaBanners_task != null) carregaBanners_task.cancel(false);
+        if(carregaMembrosImportantes_task != null) carregaMembrosImportantes_task.cancel(false);
         if(timer != null) timer.cancel();
     }
 
@@ -131,121 +129,170 @@ public class HomeFragment extends Fragment {
         return new HomeFragment();
     }
 
-    private class Dados_banner{
-        public Bitmap foto;
-        public String titulo;
-        public String descricao;
+    private class CarregaMembrosImportantesRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
     }
 
-    private class DadosApresentacao{
-        public Funcao funcao;
-        public Membro membro;
-    }
+    private class CarregaMembrosImportantes extends AsyncTask<Object, Void, CarregaMembrosImportantesRetorno> {
 
-    private class CarregaMembrosImportantes extends AsyncTask<Congregacao, Void, List<DadosApresentacao>> {
-        @Override
-        protected List<DadosApresentacao> doInBackground(Congregacao... params) {
-            try{
-                List<DadosApresentacao> membros_importantes = new ArrayList<>();
+        private View view;
 
-                FuncaoDAO funcaoDAO = new FuncaoDAO(DB.connection);
-                QueryBuilder<Funcao, Integer> _filtro = funcaoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", params[0].getId()).and().like("apresentar", true);
-
-                PreparedQuery<Funcao> preparedQuery = _filtro.prepare();
-                List<Funcao> funcoes = funcaoDAO.query(preparedQuery);
-                for(int x = 0; x < funcoes.size(); x++){
-
-                    MembroDAO membroDAO = new MembroDAO(DB.connection);
-                    QueryBuilder<Membro, Integer> __filtro = membroDAO.queryBuilder();
-                    __filtro.where().like("id_funcao", funcoes.get(x).getId()).and().like("id_igreja", params[0].getId());
-                    PreparedQuery<Membro> _preparedQuery = __filtro.prepare();
-                    List<Membro> membros = membroDAO.query(_preparedQuery);
-
-                    for(int y = 0; y < membros.size(); y++){
-
-                        DadosApresentacao dadosApresentacao = new DadosApresentacao();
-                        dadosApresentacao.funcao = funcoes.get(x);
-                        dadosApresentacao.membro = membros.get(y);
-                        membros_importantes.add(dadosApresentacao);
-
-                    }
-
-                }
-
-                return membros_importantes;
-            }
-            catch(SQLException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
+        public CarregaMembrosImportantes(View view){
+            this.view = view;
         }
 
         @Override
-        protected void onPostExecute(List<DadosApresentacao> membros_importantes) {
-            if(membros_importantes != null) for(int x = 0; x < membros_importantes.size(); x++){
-                ApresentacaoListView apresentacaoListView = new ApresentacaoListView(getContext(), null, membros_importantes.get(x).membro,  membros_importantes.get(x).funcao);
-                linearLayout.addView(apresentacaoListView);
-            }
-        }
-    }
+        protected CarregaMembrosImportantesRetorno doInBackground(Object... params) {
+            String retorno = null;
+            CarregaMembrosImportantesRetorno retorno_ = new CarregaMembrosImportantesRetorno();
+            retorno_.erro = true;
 
-    private class CarregaBanners extends AsyncTask<Congregacao, Void, List<Dados_banner>> {
-        @Override
-        protected List<Dados_banner> doInBackground(Congregacao... params) {
             try {
-                List<Dados_banner> resutado = new ArrayList<>();
 
-                BannerDAO bannerDAO = new BannerDAO(DB.connection);
-                QueryBuilder<Banner, Integer> _filtro = bannerDAO.queryBuilder();
-                _filtro.where().like("id_igreja", params[0].getId());
-                PreparedQuery<Banner> preparedQuery = _filtro.prepare();
-                List<Banner> banners = bannerDAO.query(preparedQuery);
-                for (int x = 0; x < banners.size(); x++) {
-                    URL url = new URL("http://eglise.com.br/storage/banners/" + banners.get(x).getFoto());
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream input = connection.getInputStream();
-                    Bitmap myBitmap = BitmapFactory.decodeStream(input);
+                URL url = new URL(Servidor.ip + "/api/apresentacao/" + configuracao.getString("url"));
 
-                    Dados_banner dados_banner = new Dados_banner();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
 
-                    dados_banner.foto = myBitmap;
-                    dados_banner.titulo = banners.get(x).getNome();
-                    dados_banner.descricao = banners.get(x).getDescricao();
+                int responseCode = conn.getResponseCode();
 
-                    resutado.add(dados_banner);
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return resutado;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }catch (SQLException ex){
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
         @Override
-        protected void onPostExecute(List<Dados_banner> banners) {
-            fotos = new ArrayList<>();
-            titulos = new ArrayList<>();
-            descricoes = new ArrayList<>();
-            for(int x = 0; x < banners.size(); x++){
-                fotos.add(banners.get(x).foto);
-                titulos.add(banners.get(x).titulo);
-                descricoes.add(banners.get(x).descricao);
+        protected void onPostExecute(CarregaMembrosImportantesRetorno result) {
+            MyJSONObject result_ = new MyJSONObject(result.retorno);
+            MyJSONArray funcoes = new MyJSONArray(result_.getArray("funcoes"));
+            MyJSONObject membros_ = new MyJSONObject(result_.getObjetc("membros"));
+            boolean existe_membro = false;
+            for(int x = 0; x < funcoes.size(); x++){
+                MyJSONObject funcao = new MyJSONObject(funcoes.getObjetc(x));
+                MyJSONArray membros = new MyJSONArray(membros_.getArray(funcao.getString("id")));
+                for(int y = 0; y < membros.size(); y++) {
+                    existe_membro = true;
+                    MyJSONObject membro = new MyJSONObject(membros.getObjetc(y));
+                    ApresentacaoListView apresentacaoListView = new ApresentacaoListView(getContext(), null, membro, funcao);
+                    membros_area.addView(apresentacaoListView);
+                }
             }
-            viewPager.setAdapter(new SliderAdapter(getContext(), fotos, titulos/*, descricoes*/));
-            indicator.setupWithViewPager(viewPager, true);
+            if(!existe_membro){
+                TextView titulo = view.findViewById(R.id.congregacao_equipe_titulo);
+                titulo.setVisibility(View.GONE);
+                membros_area.setVisibility(View.GONE);
+            }
+            return;
+        }
+    }
 
-            timer = new Timer();
-            timer.scheduleAtFixedRate(new SliderTimer(), 4000, 6000);
+    private class CarregaBannersRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
+    private class CarregaBanners extends AsyncTask<Object, Void, CarregaBannersRetorno> {
+        @Override
+        protected CarregaBannersRetorno doInBackground(Object... params) {
+
+            String retorno = null;
+            CarregaBannersRetorno retorno_ = new CarregaBannersRetorno();
+            retorno_.erro = true;
+
+            try {
+
+                URL url = new URL(Servidor.ip + "/api/banners/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
+                }
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            }
+
+            retorno_.mensagem = retorno;
+            return retorno_;
+        }
+
+        @Override
+        protected void onPostExecute(CarregaBannersRetorno result) {
+            if(result.erro){
+                Toast.makeText(getContext(), result.mensagem,
+                        Toast.LENGTH_LONG).show();
+            }else {
+                fotos = new ArrayList<>();
+                titulos = new ArrayList<>();
+                descricoes = new ArrayList<>();
+                MyJSONObject result_ = new MyJSONObject(result.retorno);
+                MyJSONArray banners = new MyJSONArray(result_.getArray("banners"));
+                for (int x = 0; x < banners.size(); x++) {
+                    MyJSONObject banner = new MyJSONObject(banners.getObjetc(x));
+                    byte[] decodedString = Base64.decode(banner.getString("foto"), Base64.DEFAULT);
+                    Bitmap foto_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    fotos.add(foto_);
+                    titulos.add(banner.getString("nome"));
+                    descricoes.add(banner.getString("descricao"));
+                }
+                viewPager.setAdapter(new SliderAdapter(getContext(), fotos, titulos/*, descricoes*/));
+                indicator.setupWithViewPager(viewPager, true);
+
+                timer = new Timer();
+                timer.scheduleAtFixedRate(new SliderTimer(), 4000, 6000);
+            }
         }
     }
 
@@ -253,6 +300,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void run() {
+            if(getActivity() == null) return;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

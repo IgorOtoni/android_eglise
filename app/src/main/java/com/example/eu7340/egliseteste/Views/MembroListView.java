@@ -95,7 +95,7 @@ public class MembroListView extends LinearLayout {
                 MembroComunidadeDAO membroComunidadeDAO = new MembroComunidadeDAO(DB.connection);
                 Map<String, Object> campos_ = new HashMap<>();
                 campos_.put("id_comunidade", comunidade.getId());
-                campos_.put("id_membro", Sessao.ultimo_membro.getId());
+                //campos_.put("id_membro", Sessao.ultimo_membro.getId());
                 List<MembroComunidade> membroComunidade = membroComunidadeDAO.queryForFieldValues(campos_);
                 if(membroComunidade != null && membroComunidade.size() == 1) return membroComunidade.get(0).isLider();
                 else return false;

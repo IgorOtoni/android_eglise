@@ -4,11 +4,11 @@
     <item
         android:id="@+id/mn_eglise"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="Eglise" />
+        android:title="Sobre" />
 
     <item
         android:id="@+id/mn_congregacoes"
         android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="Congregações" />
+        android:title="Sites" />
 
 </menu>

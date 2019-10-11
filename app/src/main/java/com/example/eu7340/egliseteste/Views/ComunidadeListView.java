@@ -11,14 +11,15 @@ import android.widget.TextView;
 import com.example.eu7340.egliseteste.ComunidadeCRUDActivity;
 import com.example.eu7340.egliseteste.Models.Comunidade;
 import com.example.eu7340.egliseteste.R;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 public class ComunidadeListView extends LinearLayout {
 
-    private Comunidade comunidade;
+    private MyJSONObject comunidade;
     private View view;
 
-    public ComunidadeListView(Context context, AttributeSet attrs, Comunidade comunidade) {
+    public ComunidadeListView(Context context, AttributeSet attrs, MyJSONObject comunidade) {
         super(context, attrs);
         this.comunidade = comunidade;
         init(context, attrs);
@@ -28,10 +29,10 @@ public class ComunidadeListView extends LinearLayout {
         view = inflate(context, R.layout.comunidade_list, this);
 
         TextView nome = view.findViewById(R.id.comunidade_nome);
-        nome.setText(comunidade.getNome());
+        nome.setText(comunidade.getString("nome"));
 
         TextView descricao = view.findViewById(R.id.comunidade_descricao);
-        descricao.setText(comunidade.getDescricao());
+        descricao.setText(comunidade.getString("descricao"));
 
         ImageButton bt = view.findViewById(R.id.comunidade_bt);
         bt.setOnClickListener(new OnClickListener() {
@@ -42,7 +43,7 @@ public class ComunidadeListView extends LinearLayout {
         });
     }
 
-    public void detalhes_comunidade(Comunidade comunidade){
+    public void detalhes_comunidade(MyJSONObject comunidade){
         Gson gson = new Gson();
         String comunidade_json = gson.toJson(comunidade);
 

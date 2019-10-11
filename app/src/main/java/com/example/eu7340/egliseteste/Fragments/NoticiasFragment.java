@@ -7,26 +7,35 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.NoticiaDAO;
 import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.Noticia;
 import com.example.eu7340.egliseteste.Views.NoticiaListView;
 import com.example.eu7340.egliseteste.R;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class NoticiasFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
 
-    private ScrollView scrollView;
+    private LinearLayout noticias_area;
+
+    private TextView msg_loading;
+    private TextView msg_erro;
 
     private CarregaNoticias carregaNoticias_task;
 
@@ -41,13 +50,16 @@ public class NoticiasFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_noticias, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        configuracao = Sessao.ultima_configuracao;
 
-        scrollView = view.findViewById(R.id.scrollView);
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
 
-        /*carregaNoticias_task = new CarregaNoticias(view);
-        carregaNoticias_task.execute(congregacao);*/
+        noticias_area = view.findViewById(R.id.noticias_area);
+
+        carregaNoticias_task = new CarregaNoticias(view);
+        carregaNoticias_task.execute();
 
         return view;
     }
@@ -56,22 +68,28 @@ public class NoticiasFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if(carregaNoticias_task != null) carregaNoticias_task.cancel(true);
+        if(carregaNoticias_task != null) carregaNoticias_task.cancel(false);
         carregaNoticias_task = new CarregaNoticias(getView());
-        carregaNoticias_task.execute(congregacao);
+        carregaNoticias_task.execute();
     }
 
     public void onDestroy(){
         super.onDestroy();
 
-        if(carregaNoticias_task != null) carregaNoticias_task.cancel(true);
+        if(carregaNoticias_task != null) carregaNoticias_task.cancel(false);
     }
 
     public static NoticiasFragment newInstance() {
         return new NoticiasFragment();
     }
 
-    private class CarregaNoticias extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class CarregaNoticiasRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
+    private class CarregaNoticias extends AsyncTask<Congregacao, Object, CarregaNoticiasRetorno> {
 
         private final View view;
 
@@ -79,33 +97,72 @@ public class NoticiasFragment extends Fragment {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public CarregaNoticiasRetorno doInBackground(Congregacao... objects) {
+
+            String retorno = null;
+            CarregaNoticiasRetorno retorno_ = new CarregaNoticiasRetorno();
+            retorno_.erro = true;
+
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
 
-                NoticiaDAO noticiaDAO = new NoticiaDAO(DB.connection);
-                QueryBuilder<Noticia, Integer> _filtro = noticiaDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<Noticia> preparedQuery = _filtro.prepare();
-                List<Noticia> publicacoes = noticiaDAO.query(preparedQuery);
-                for (int x = 0; x < publicacoes.size(); x++) {
-                    final Noticia noticia = publicacoes.get(x);
-                    NoticiaListView noticia_view = new NoticiaListView(getContext(), null, noticia);
-                    linearLayout.addView(noticia_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                URL url = new URL(Servidor.ip + "/api/noticias/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return linearLayout;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            scrollView.removeAllViews();
-            scrollView.addView(linearLayout);
+        protected void onPostExecute(CarregaNoticiasRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
+
+                noticias_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray noticias = new MyJSONArray(result_.getArray("noticias"));
+                    for (int x = 0; x < noticias.size(); x++) {
+                        final MyJSONObject noticia = new MyJSONObject(noticias.getObjetc(x));
+                        NoticiaListView noticia_view = new NoticiaListView(getContext(), null, noticia);
+                        noticias_area.addView(noticia_view);
+                    }
+                }
+            }
         }
     }
 }

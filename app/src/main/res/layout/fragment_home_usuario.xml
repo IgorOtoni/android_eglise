@@ -19,10 +19,13 @@
                 android:id="@+id/membro_comunidades_lider_titulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
                 android:textSize="25dp"
                 android:textStyle="bold"
                 android:text="Comunidades que você é lider"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_margin="5dp" />
 
             <LinearLayout
                 android:id="@+id/membro_comunidades_lider"
@@ -34,28 +37,16 @@
                 android:id="@+id/membro_comunidades_titulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
                 android:textSize="25dp"
                 android:textStyle="bold"
                 android:text="Comunidades que você participa"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_margin="5dp" />
 
             <LinearLayout
                 android:id="@+id/membro_comunidades"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"></LinearLayout>
-
-            <TextView
-                android:id="@+id/membro_dizimos_titulo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="25dp"
-                android:textStyle="bold"
-                android:text="Seus dízimos"
-                android:gravity="center" />
-
-            <LinearLayout
-                android:id="@+id/membro_dizimos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"></LinearLayout>
@@ -67,8 +58,9 @@
                 android:textSize="25dp"
                 android:textStyle="bold"
                 android:text="Seu usuário não é membro desta congregação"
-                android:textColor="#ff0000"
-                android:gravity="center" />
+                android:textColor="@color/colorRed"
+                android:gravity="center"
+                android:layout_margin="5dp" />
 
         </LinearLayout>
 

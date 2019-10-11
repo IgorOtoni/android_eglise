@@ -7,28 +7,37 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.EventoDAO;
 import com.example.eu7340.egliseteste.Views.EventoListView;
 import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.Evento;
 import com.example.eu7340.egliseteste.R;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class EventosFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
 
-    private ScrollView scrollView;
+    private LinearLayout eventos_area;
 
-    private CarregaEventoss carregaEventos_task;
+    private TextView msg_loading;
+    private TextView msg_erro;
+
+    private CarregaEventos carregaEventos_task;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,13 +50,16 @@ public class EventosFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_eventos, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = Sessao.ultima_configuracao;
 
-        scrollView = view.findViewById(R.id.scrollView);
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
 
-        /*carregaEventoss_task = new CarregaEventoss(view);
-        carregaEventoss_task.execute(congregacao);*/
+        eventos_area = view.findViewById(R.id.eventos_area);
+
+        carregaEventos_task = new CarregaEventos(view);
+        carregaEventos_task.execute();
 
         return view;
     }
@@ -56,8 +68,8 @@ public class EventosFragment extends Fragment {
         super.onResume();
 
         if(carregaEventos_task != null) carregaEventos_task.cancel(true);
-        carregaEventos_task = new CarregaEventoss(getView());
-        carregaEventos_task.execute(congregacao);
+        carregaEventos_task = new CarregaEventos(getView());
+        carregaEventos_task.execute();
     }
 
     public void onDestroy(){
@@ -66,46 +78,89 @@ public class EventosFragment extends Fragment {
         if(carregaEventos_task != null) carregaEventos_task.cancel(true);
     }
 
+    private class CarregaEventosRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
     public static EventosFragment newInstance() {
         return new EventosFragment();
     }
 
-    private class CarregaEventoss extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class CarregaEventos extends AsyncTask<Congregacao, Object, CarregaEventosRetorno> {
 
         private final View view;
 
-        public CarregaEventoss(View view) {
+        public CarregaEventos(View view) {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public CarregaEventosRetorno doInBackground(Congregacao... objects) {
+
+            String retorno = null;
+            CarregaEventosRetorno retorno_ = new CarregaEventosRetorno();
+            retorno_.erro = true;
+
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
 
-                EventoDAO eventoDAO = new EventoDAO(DB.connection);
-                QueryBuilder<Evento, Integer> _filtro = eventoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<Evento> preparedQuery = _filtro.prepare();
-                List<Evento> eventos = eventoDAO.query(preparedQuery);
-                for (int x = 0; x < eventos.size(); x++) {
-                    final Evento evento = eventos.get(x);
-                    EventoListView evento_view = new EventoListView(getContext(), null, evento);
-                    linearLayout.addView(evento_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                URL url = new URL(Servidor.ip + "/api/eventos/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return linearLayout;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            if(linearLayout != null) {
-                scrollView.removeAllViews();
-                scrollView.addView(linearLayout);
+        protected void onPostExecute(CarregaEventosRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
+
+                eventos_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray eventos = new MyJSONArray(result_.getArray("eventos"));
+                    for (int x = 0; x < eventos.size(); x++) {
+                        final MyJSONObject evento = new MyJSONObject(eventos.getObjetc(x));
+                        EventoListView evento_view = new EventoListView(getContext(), null, evento);
+                        eventos_area.addView(evento_view);
+                    }
+                }
             }
         }
     }

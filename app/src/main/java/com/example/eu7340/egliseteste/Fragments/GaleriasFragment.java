@@ -7,27 +7,35 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.GaleriaDAO;
-import com.example.eu7340.egliseteste.Models.Congregacao;
 import com.example.eu7340.egliseteste.Models.Galeria;
 import com.example.eu7340.egliseteste.R;
 import com.example.eu7340.egliseteste.Views.GaleriaListView;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class GaleriasFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
 
-    private ScrollView scrollView;
+    private LinearLayout galerias_area;
+
+    private TextView msg_loading;
+    private TextView msg_erro;
 
     private CarregaGalerias carregaGalerias_task;
 
@@ -42,13 +50,16 @@ public class GaleriasFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.fragment_galerias, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = Sessao.ultima_configuracao;
 
-        scrollView = view.findViewById(R.id.scrollView);
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
 
-        /*carregaGalerias_task = new CarregaGalerias(view);
-        carregaGalerias_task.execute(congregacao);*/
+        galerias_area = view.findViewById(R.id.galerias_area);
+
+        carregaGalerias_task = new CarregaGalerias(view);
+        carregaGalerias_task.execute();
 
         return view;
     }
@@ -56,15 +67,15 @@ public class GaleriasFragment extends Fragment {
     public void onResume(){
         super.onResume();
 
-        if(carregaGalerias_task != null) carregaGalerias_task.cancel(true);
+        if(carregaGalerias_task != null) carregaGalerias_task.cancel(false);
         carregaGalerias_task = new CarregaGalerias(getView());
-        carregaGalerias_task.execute(congregacao);
+        carregaGalerias_task.execute();
     }
 
     public void onDestroy(){
         super.onDestroy();
 
-        if(carregaGalerias_task != null) carregaGalerias_task.cancel(true);
+        if(carregaGalerias_task != null) carregaGalerias_task.cancel(false);
     }
 
     public static GaleriasFragment newInstance() {
@@ -75,7 +86,13 @@ public class GaleriasFragment extends Fragment {
         public Galeria galeria;
     }
 
-    private class CarregaGalerias extends AsyncTask<Congregacao, Object, List<DadosGalerias>> {
+    private class CarregaGaleriasRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
+    private class CarregaGalerias extends AsyncTask<Object, Object, CarregaGaleriasRetorno> {
 
         private final View view;
 
@@ -83,40 +100,74 @@ public class GaleriasFragment extends Fragment {
             this.view = view;
         }
 
-        public List<DadosGalerias> doInBackground(Congregacao... objects) {
+        public CarregaGaleriasRetorno doInBackground(Object... objects) {
+
+            String retorno = null;
+            CarregaGaleriasRetorno retorno_ = new CarregaGaleriasRetorno();
+            retorno_.erro = true;
+
             try {
-                List<DadosGalerias> dados_galerias = new ArrayList<>();
 
-                GaleriaDAO galeriaDAO = new GaleriaDAO(DB.connection);
-                QueryBuilder<Galeria, Integer> _filtro = galeriaDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<Galeria> preparedQuery = _filtro.prepare();
-                List<Galeria> galerias = galeriaDAO.query(preparedQuery);
-                for (int x = 0; x < galerias.size(); x++) {
-                    DadosGalerias dado_galeria = new DadosGalerias();
-                    dado_galeria.galeria = galerias.get(x);
-                    dados_galerias.add(dado_galeria);
+                URL url = new URL(Servidor.ip + "/api/galerias/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return dados_galerias;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(List<DadosGalerias> dados_galerias) {
-            LinearLayout linearLayout = new LinearLayout(view.getContext());
+        protected void onPostExecute(CarregaGaleriasRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
 
-            for (int x = 0; x < dados_galerias.size(); x++) {
-                GaleriaListView galeria_view = new GaleriaListView(view.getContext(), null, dados_galerias.get(x).galeria);
-                linearLayout.addView(galeria_view);
-                linearLayout.setOrientation(LinearLayout.VERTICAL);
+                galerias_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray galerias = new MyJSONArray(result_.getArray("galerias"));
+                    MyJSONObject fotos_ = new MyJSONObject(result_.getObjetc("fotos"));
+                    for (int x = 0; x < galerias.size(); x++) {
+                        final MyJSONObject galeria = new MyJSONObject(galerias.getObjetc(x));
+                        final MyJSONArray fotos = new MyJSONArray(fotos_.getArray(galeria.getString("id")));
+                        GaleriaListView evento_view = new GaleriaListView(getContext(), null, galeria, fotos);
+                        galerias_area.addView(evento_view);
+                    }
+                }
             }
-
-            scrollView.removeAllViews();
-            scrollView.addView(linearLayout);
         }
     }
 }

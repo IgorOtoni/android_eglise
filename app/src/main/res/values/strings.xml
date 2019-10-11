@@ -1,7 +1,7 @@
 <resources>
     <string name="google_maps_key">AIzaSyBN55s-bvAgaYnoGgS2XaPXBQqYcoC_6W8</string>
 
-    <string name="app_name">Eglise</string>
+    <string name="app_name">Sites</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>

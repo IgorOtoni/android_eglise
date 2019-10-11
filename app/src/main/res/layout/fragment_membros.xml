@@ -13,10 +13,13 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="Membros da comunidade"
-            android:gravity="center" />
+            android:gravity="center"
+            android:layout_margin="5dp" />
 
         <ScrollView
             android:layout_width="match_parent"

@@ -19,7 +19,7 @@ public class EgliseFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_eglise, container, false);
+        View view = inflater.inflate(R.layout.fragment_apresentacao, container, false);
 
         return view;
     }

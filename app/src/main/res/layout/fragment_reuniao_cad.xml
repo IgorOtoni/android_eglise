@@ -8,17 +8,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_margin="5dp">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="Adicionar reunião"
             android:gravity="center"
-            android:layout_gravity="center"/>
+            android:layout_margin="5dp"/>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -35,17 +36,20 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="CEP:"
+                    android:layout_margin="5dp"
                     />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center">
 
                     <EditText
                         android:id="@+id/reuniao_cep"
                         android:layout_width="300dp"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp" />
 
                     <View
                         android:layout_width="0dp"
@@ -57,7 +61,8 @@
                         android:id="@+id/reuniaocep_bt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/pesquisar"/>
+                        android:src="@drawable/pesquisar"
+                        android:layout_margin="5dp" />
 
                 </LinearLayout>
 
@@ -67,12 +72,14 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Bairro:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
                     android:id="@+id/reuniao_bairro"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -80,12 +87,14 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Rua:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
                     android:id="@+id/reuniao_rua"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -93,12 +102,14 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Número:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
                     android:id="@+id/reuniao_num"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -106,12 +117,14 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Complemento:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
                     android:id="@+id/reuniao_comp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -119,17 +132,20 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Início:"
+                    android:layout_margin="5dp"
                     />
 
                 <com.example.eu7340.egliseteste.utils.CustomDatePicker
                     android:id="@+id/reuniao_dt_inicio"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TimePicker
                     android:id="@+id/reuniao_hr_inicio"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp">
 
                 </TimePicker>
 
@@ -139,17 +155,20 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Fim:"
+                    android:layout_margin="5dp"
                     />
 
                 <com.example.eu7340.egliseteste.utils.CustomDatePicker
                     android:id="@+id/reuniao_dt_fim"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TimePicker
                     android:id="@+id/reuniao_hr_fim"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp">
 
                 </TimePicker>
 
@@ -159,6 +178,7 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Descrição:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
@@ -166,7 +186,8 @@
                     android:singleLine="false"
                     android:lines="4"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -174,6 +195,7 @@
                     android:textStyle="bold"
                     android:textSize="20dp"
                     android:text="Observação:"
+                    android:layout_margin="5dp"
                     />
 
                 <EditText
@@ -181,14 +203,16 @@
                     android:singleLine="false"
                     android:lines="4"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
 
                 <Button
                     android:id="@+id/reuniaocad_bt"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="20dp"
-                    android:text="Adicionar reunião"/>
+                    android:text="Adicionar reunião"
+                    android:layout_margin="5dp" />
 
             </LinearLayout>
 

@@ -12,9 +12,9 @@ import java.sql.SQLException;
  * Created by EU7340 on 04/12/2018.
  */
 public class DatabaseHelper extends AsyncTask<Object, Object, Object> {
-    private static final String databaseName = "jdbc:mysql://192.168.0.112:3306/db_sge_eglise";
-    private static final String user = "eglise";
-    private static final String password = "123456";
+    private static final String databaseName = "jdbc:mysql://192.168.0.103:3306/db_sge_eglise";
+    private static final String user = "IgorOtoni";
+    private static final String password = "7340";
     private final Context context;
 
     public DatabaseHelper(Context context){

@@ -7,24 +7,34 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eu7340.egliseteste.DB.DB;
-import com.example.eu7340.egliseteste.DB.SermaoDAO;
-import com.example.eu7340.egliseteste.Models.Congregacao;
-import com.example.eu7340.egliseteste.Models.Sermao;
 import com.example.eu7340.egliseteste.R;
 import com.example.eu7340.egliseteste.Views.SermaoListView;
-import com.google.gson.Gson;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
+import com.example.eu7340.egliseteste.utils.MyJSONArray;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
+import com.example.eu7340.egliseteste.utils.Servidor;
+import com.example.eu7340.egliseteste.utils.Sessao;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class SermoesFragment extends Fragment {
 
-    private Congregacao congregacao;
+    private MyJSONObject configuracao;
+
+    private LinearLayout sermoes_area;
+
+    private TextView msg_loading;
+    private TextView msg_erro;
 
     private CarregaSermoes carregaSermoes_task;
 
@@ -39,11 +49,16 @@ public class SermoesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sermoes, container, false);
 
-        Gson gson = new Gson();
-        this.congregacao = gson.fromJson(getActivity().getIntent().getStringExtra("congregacao_app"), Congregacao.class);
+        this.configuracao = Sessao.ultima_configuracao;
 
-        /*carregaSermoes_task = new CarregaSermoes(view);
-        carregaSermoes_task.execute(congregacao);*/
+        msg_loading = view.findViewById(R.id.msg_loading);
+        msg_erro = view.findViewById(R.id.msg_erro);
+        msg_erro.setVisibility(View.GONE);
+
+        sermoes_area = view.findViewById(R.id.sermoes_area);
+
+        carregaSermoes_task = new CarregaSermoes(view);
+        carregaSermoes_task.execute();
 
         return view;
     }
@@ -52,23 +67,29 @@ public class SermoesFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if(carregaSermoes_task != null) carregaSermoes_task.cancel(true);
+        if(carregaSermoes_task != null) carregaSermoes_task.cancel(false);
         carregaSermoes_task = new CarregaSermoes(getView());
-        carregaSermoes_task.execute(congregacao);
+        carregaSermoes_task.execute();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if(carregaSermoes_task != null) carregaSermoes_task.cancel(true);
+        if(carregaSermoes_task != null) carregaSermoes_task.cancel(false);
     }
 
     public static SermoesFragment newInstance() {
         return new SermoesFragment();
     }
 
-    private class CarregaSermoes extends AsyncTask<Congregacao, Object, LinearLayout> {
+    private class CarregaSermoesRetorno{
+        public boolean erro;
+        public String retorno;
+        public String mensagem;
+    }
+
+    private class CarregaSermoes extends AsyncTask<Object, Object, CarregaSermoesRetorno> {
 
         private final View view;
 
@@ -76,33 +97,72 @@ public class SermoesFragment extends Fragment {
             this.view = view;
         }
 
-        public LinearLayout doInBackground(Congregacao... objects) {
+        public CarregaSermoesRetorno doInBackground(Object... objects) {
+
+            String retorno = null;
+            CarregaSermoesRetorno retorno_ = new CarregaSermoesRetorno();
+            retorno_.erro = true;
+
             try {
-                LinearLayout linearLayout = new LinearLayout(view.getContext());
 
-                SermaoDAO sermaoDAO = new SermaoDAO(DB.connection);
-                QueryBuilder<Sermao, Integer> _filtro = sermaoDAO.queryBuilder();
-                _filtro.where().like("id_igreja", objects[0].getId());
-                PreparedQuery<Sermao> preparedQuery = _filtro.prepare();
-                List<Sermao> publicacoes = sermaoDAO.query(preparedQuery);
-                for (int x = 0; x < publicacoes.size(); x++) {
-                    final Sermao sermao = publicacoes.get(x);
-                    SermaoListView sermao_view = new SermaoListView(getContext(), null, sermao);
-                    linearLayout.addView(sermao_view);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                URL url = new URL(Servidor.ip + "/api/sermoes/" + configuracao.getString("url"));
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(Servidor.max_time_con);
+                conn.setConnectTimeout(Servidor.max_time_con);
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    String response = null;
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        if(response == null) response = line;
+                        else response += line;
+                    }
+                    retorno_.erro = false;
+                    retorno_.retorno = response;
+                }else {
+                    retorno = "Response: " + responseCode;
                 }
-
-                return linearLayout;
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                retorno =  e.getMessage();
             }
 
-            return null;
+            retorno_.mensagem = retorno;
+            return retorno_;
         }
 
-        protected void onPostExecute(LinearLayout linearLayout) {
-            ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
-            scrollView.addView(linearLayout);
+        protected void onPostExecute(CarregaSermoesRetorno result) {
+            if(!isCancelled()) {
+                msg_loading.setVisibility(View.GONE);
+
+                sermoes_area.removeAllViews();
+
+                if (result.erro) {
+                    Toast.makeText(getContext(), result.mensagem,
+                            Toast.LENGTH_LONG).show();
+                    msg_erro.setVisibility(View.VISIBLE);
+                } else {
+                    MyJSONObject result_ = new MyJSONObject(result.retorno);
+                    MyJSONArray sermoes = new MyJSONArray(result_.getArray("sermoes"));
+                    for (int x = 0; x < sermoes.size(); x++) {
+                        final MyJSONObject sermao = new MyJSONObject(sermoes.getObjetc(x));
+                        SermaoListView sermao_view = new SermaoListView(getContext(), null, sermao);
+                        sermoes_area.addView(sermao_view);
+                    }
+                }
+            }
         }
     }
 }

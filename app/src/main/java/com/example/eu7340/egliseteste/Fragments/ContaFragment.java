@@ -84,10 +84,10 @@ public class ContaFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_conta, container, false);
 
-        usuario = Sessao.ultimo_usuario;
+        /*usuario = Sessao.ultimo_usuario;
         perfil = Sessao.ultimo_perfil;
         membro = Sessao.ultimo_membro;
-        funcao = Sessao.ultima_funcao;
+        funcao = Sessao.ultima_funcao;*/
 
         nome = view.findViewById(R.id.conta_nome);
         nome.setText(membro.getNome());
@@ -178,7 +178,7 @@ public class ContaFragment extends Fragment {
     public void onDestroy(){
         super.onDestroy();
 
-        if(downloadCEPTask_task != null) downloadCEPTask_task.cancel(true);
+        if(downloadCEPTask_task != null) downloadCEPTask_task.cancel(false);
     }
 
     private class DownloadCEPTask extends AsyncTask<String, Void, ViaCEP> {

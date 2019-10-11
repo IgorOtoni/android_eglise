@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Fragments.EgliseFragment">
+
+    <!--<ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="Bem vindo!"
+                android:gravity="center"
+                android:layout_margin="5dp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:src="@drawable/bg_sites"/>
+
+            <TextView
+                android:id="@+id/txt_programa_apresentacao"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textSize="17dp"
+                android:gravity="center"
+                android:text="Adquira já seu site e aplicativo, para divulgar seus eventos, notícias, vídeos, galerias, publicações, divulgar seus produtos e agendar reuniões." />
+
+        </LinearLayout>
+
+    <!--</ScrollView>-->
+
+</FrameLayout>

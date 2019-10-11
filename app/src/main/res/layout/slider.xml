@@ -20,7 +20,7 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="350dp"
+                android:layout_height="250dp"
                 android:orientation="vertical">
 
                 <android.support.v4.view.ViewPager
@@ -41,10 +41,34 @@
             </RelativeLayout>
 
             <TextView
+                android:id="@+id/congregacao_apresentacao_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="Apresentação"
+                android:gravity="center"
+                android:layout_margin="5dp" />
+
+            <TextView
                 android:id="@+id/congregacao_apresentacao"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"/>
+
+            <TextView
+                android:id="@+id/congregacao_contatos_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="Contatos"
+                android:gravity="center"
+                android:layout_margin="5dp" />
 
             <TextView
                 android:id="@+id/congregacao_telefone"
@@ -67,10 +91,40 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="10dp"/>
 
+            <TextView
+                android:id="@+id/map_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="Localização"
+                android:gravity="center"
+                android:layout_margin="5dp" />
+
             <LinearLayout
                 android:id="@+id/map_container"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/congregacao_equipe_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/margem"
+                android:textColor="#FFFFFF"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="Equipe"
+                android:gravity="center"
+                android:layout_margin="5dp" />
+
+            <LinearLayout
+                android:id="@+id/membros_area"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:orientation="vertical" />
 
         </LinearLayout>

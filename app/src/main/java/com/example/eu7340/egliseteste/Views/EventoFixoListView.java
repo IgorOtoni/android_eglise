@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
+import android.util.Base64;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import com.example.eu7340.egliseteste.EventoFixoActivity;
 import com.example.eu7340.egliseteste.Models.EventoFixo;
 import com.example.eu7340.egliseteste.R;
+import com.example.eu7340.egliseteste.utils.MyJSONObject;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -25,12 +28,10 @@ import java.net.URL;
 
 public class EventoFixoListView extends LinearLayout {
 
-    private EventoFixo eventofixo;
+    private MyJSONObject eventofixo;
     private View view;
 
-    private CarregaFotoEventoFixo carregaFotoEventoFixo_task;
-
-    public EventoFixoListView(Context context, AttributeSet attrs, EventoFixo eventofixo) {
+    public EventoFixoListView(Context context, AttributeSet attrs, MyJSONObject eventofixo) {
         super(context, attrs);
         this.eventofixo = eventofixo;
         init(context, attrs);
@@ -40,15 +41,18 @@ public class EventoFixoListView extends LinearLayout {
         view = inflate(context, R.layout.eventofixo_list, this);
 
         TextView nome = view.findViewById(R.id.eventofixo_nome);
-        nome.setText(eventofixo.getNome());
+        nome.setText(eventofixo.getString("nome"));
 
         TextView dados = view.findViewById(R.id.eventofixo_dados);
-        dados.setText(eventofixo.getDados_horario_local());
-        
-        carregaFotoEventoFixo_task = new CarregaFotoEventoFixo();
-        carregaFotoEventoFixo_task.execute(eventofixo);
+        dados.setText(eventofixo.getString("dados_horario_local"));
 
-        ImageButton bt = view.findViewById(R.id.eventofixo_bt);
+        byte[] decodedString = Base64.decode(eventofixo.getString("foto"), Base64.DEFAULT);
+        Bitmap foto_ = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+        ImageView imageView = view.findViewById(R.id.eventofixo_imagem);
+        imageView.setImageBitmap(foto_);
+
+        Button bt = view.findViewById(R.id.eventofixo_bt);
         bt.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,7 +61,7 @@ public class EventoFixoListView extends LinearLayout {
         });
     }
 
-    public void detalhes_eventofixo(EventoFixo eventofixo){
+    public void detalhes_eventofixo(MyJSONObject eventofixo){
         Gson gson = new Gson();
         String eventofixo_json = gson.toJson(eventofixo);
 
@@ -66,33 +70,6 @@ public class EventoFixoListView extends LinearLayout {
         intent.putExtra("eventofixo_detalhe", eventofixo_json);
 
         getContext().startActivity(intent);
-    }
-
-    private class CarregaFotoEventoFixo extends AsyncTask<EventoFixo, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(EventoFixo... params) {
-            try {
-                URL url = new URL("http://eglise.com.br/storage/" + (params[0].getFoto() != null ? "eventos/" + params[0].getFoto() : "no-news.jpg"));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                return myBitmap;
-            }catch (MalformedURLException ex){
-                ex.printStackTrace();
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            ImageView imageView = view.findViewById(R.id.eventofixo_imagem);
-            imageView.setImageBitmap(result);
-        }
     }
 
 }

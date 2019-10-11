@@ -93,12 +93,12 @@ public class AppUsuarioActivity extends AppCompatActivity
         this.funcao = gson.fromJson(getIntent().getStringExtra("funcao_app"), Funcao.class);
 
         if(!Sessao.existe_login_ativo){
-            congregacao = Sessao.ultima_congregacao;
+            /*congregacao = Sessao.ultima_congregacao;
             configuracao = Sessao.ultima_configuracao;
             usuario = Sessao.ultimo_usuario;
             perfil = Sessao.ultimo_perfil;
             membro = Sessao.ultimo_membro;
-            funcao = Sessao.ultima_funcao;
+            funcao = Sessao.ultima_funcao;*/
 
             String congregacao_json = gson.toJson(congregacao);
             String configuracao_json = gson.toJson(configuracao);
@@ -119,12 +119,12 @@ public class AppUsuarioActivity extends AppCompatActivity
 
             this.setIntent(intent);
         }else{
-            Sessao.ultima_congregacao = congregacao;
+            /*Sessao.ultima_congregacao = congregacao;
             Sessao.ultima_configuracao = configuracao;
             Sessao.ultimo_usuario = usuario;
             Sessao.ultimo_perfil = perfil;
             Sessao.ultimo_membro = membro;
-            Sessao.ultima_funcao = funcao;
+            Sessao.ultima_funcao = funcao;*/
         }
 
         getSupportActionBar().setTitle(this.congregacao.getNome());

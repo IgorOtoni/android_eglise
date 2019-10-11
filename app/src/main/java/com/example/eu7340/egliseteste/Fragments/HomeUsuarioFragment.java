@@ -42,7 +42,6 @@ public class HomeUsuarioFragment extends Fragment {
     private LinearLayout comunidade_lider_area;
     private TextView titulo_comunidade;
     private LinearLayout comunidade_area;
-    private TextView titulo_dizimos;
     private LinearLayout dizimo_area;
     private TextView msg_erro_membro;
 
@@ -65,7 +64,6 @@ public class HomeUsuarioFragment extends Fragment {
         comunidade_lider_area = view.findViewById(R.id.membro_comunidades_lider);
         titulo_comunidade = view.findViewById(R.id.membro_comunidades_titulo);
         comunidade_area = view.findViewById(R.id.membro_comunidades);
-        titulo_dizimos = view.findViewById(R.id.membro_dizimos_titulo);
         dizimo_area = view.findViewById(R.id.membro_comunidades);
         msg_erro_membro = view.findViewById(R.id.msg_erro);
 
@@ -85,7 +83,6 @@ public class HomeUsuarioFragment extends Fragment {
             comunidade_lider_area.setVisibility(View.GONE);
             titulo_comunidade.setVisibility(View.GONE);
             comunidade_area.setVisibility(View.GONE);
-            titulo_dizimos.setVisibility(View.GONE);
             dizimo_area.setVisibility(View.GONE);
         }
 
@@ -155,8 +152,8 @@ public class HomeUsuarioFragment extends Fragment {
                 titulo_comunidade_lider.setVisibility(View.GONE);
             }else{
                 for(int x = 0; x < dados.comunidades_lider.size(); x++){
-                    ComunidadeListView comunidadeListView = new ComunidadeListView(getContext(), null, dados.comunidades_lider.get(x));
-                    comunidade_lider_area.addView(comunidadeListView);
+                    /*ComunidadeListView comunidadeListView = new ComunidadeListView(getContext(), null, dados.comunidades_lider.get(x));
+                    comunidade_lider_area.addView(comunidadeListView);*/
                 }
             }
 
@@ -164,8 +161,8 @@ public class HomeUsuarioFragment extends Fragment {
                 titulo_comunidade.setVisibility(View.GONE);
             }else{
                 for(int x = 0; x < dados.comunidades.size(); x++){
-                    ComunidadeListView comunidadeListView = new ComunidadeListView(getContext(), null, dados.comunidades.get(x));
-                    comunidade_area.addView(comunidadeListView);
+                    /*ComunidadeListView comunidadeListView = new ComunidadeListView(getContext(), null, dados.comunidades.get(x));
+                    comunidade_area.addView(comunidadeListView);*/
                 }
             }
         }

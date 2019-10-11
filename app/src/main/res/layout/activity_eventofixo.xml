@@ -15,10 +15,13 @@
             android:id="@+id/eventofixo_nome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/margem"
+            android:textColor="#FFFFFF"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="Congregações"
-            android:gravity="center" />
+            android:gravity="center"
+            android:layout_margin="5dp" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -33,23 +36,26 @@
                     android:id="@+id/eventofixo_imagem"
                     android:layout_width="250dp"
                     android:layout_height="250dp"
+                    android:layout_margin="10dp"
                     android:layout_gravity="center"/>
 
                 <TextView
                     android:id="@+id/eventofixo_dados"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_gravity="center"
                     android:textSize="20dp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:text="Dados"/>
 
                 <TextView
                     android:id="@+id/eventofixo_descricao"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:layout_gravity="center"/>
+                    android:layout_gravity="center"
+                    android:text="Descrição"/>
 
             </LinearLayout>
 
